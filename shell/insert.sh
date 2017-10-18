@@ -20,8 +20,10 @@ then
     exit 1
 fi
 
+mkdir -p ../tmp
+
 cat ../sql/templates/insert_user | sed -e "s/<username>/$username/g" -e "s/<password>/$password/g" > ../tmp/insert_user.sql
 
-psql -U postgres -f ../tmp/insert_user.sql postgres
+psql -U postgres -f ../tmp/insert_user.sql -d postgres
 
 rm ../tmp/insert_user.sql
