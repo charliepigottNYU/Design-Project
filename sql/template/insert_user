@@ -1,1 +1,0 @@
-INSERT INTO user_info (username,password) VALUES ($_USER,$_PASSWORD)
