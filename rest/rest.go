@@ -1,6 +1,7 @@
 package main
 
 import (
+    "os/exec"
     "fmt"
     "net/http"
     //"time"
@@ -9,13 +10,15 @@ import (
 const SESSION_COOKIE = "session"
 
 func main(){
+    http.HandleFunc("/signup", signup)
+
     http.HandleFunc("/signup-submit", signupSubmit)
 
     http.ListenAndServe(":80",nil)
 }
 
 func signup(w http.ResponseWriter, r *http.Request){
-    http.ServeFile(w, r, "web/signup.html")
+    http.ServeFile(w, r, "../web/signup.html")
 }
 
 func signupSubmit(w http.ResponseWriter, r *http.Request){
@@ -23,11 +26,15 @@ func signupSubmit(w http.ResponseWriter, r *http.Request){
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
     w.Header().Set("Expires", "0")
-
+    fmt.Println("here")
     if r.Method == http.MethodPost {
         r.ParseForm()
-        if r.PostFormValue("password") != r.PostFormValue("confirm") {
-            /*database info goes here*/
+        if r.PostFormValue("password") == r.PostFormValue("confirm") {
+            args := []string{"../shell/insert.sh", "-u",r.PostFormValue("username"),"-p",r.PostFormValue("password")}
+            if err := exec.Command("bash", args...).Run(); err != nil{
+                fmt.Println("error sending database info",err)
+                return
+            }
             fmt.Println(r.PostFormValue("username")," signup")
         }
     }
