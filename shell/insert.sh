@@ -26,9 +26,14 @@ cat ../sql/templates/insert_user | sed -e "s/<username>/$username/g" -e "s/<pass
 
 psql -U postgres -f ../tmp/insert_user.sql -d postgres -v "ON_ERROR_STOP=1"
 
-if [ $? -ne 0 ];
-then
-    exit $?
-fi
+psql_error_code=$?
 
 rm ../tmp/insert_user.sql
+
+if [ $psql_error_code -ne 0 ];
+then
+    exit $psql_error_code;
+fi
+
+exit $?
+
