@@ -20,15 +20,15 @@ then
     exit 1
 fi
 
-mkdir -p ../tmp
+mkdir -p ../../tmp
 
-cat ../sql/templates/insert_user.template | sed -e "s/<username>/$username/g" -e "s/<password>/$password/g" > ../tmp/insert_user.sql
+cat ../../sql/templates/insert_user.template | sed -e "s/<username>/$username/g" -e "s/<password>/$password/g" > ../../tmp/insert_user.sql
 
-psql -U postgres -f ../tmp/insert_user.sql -d postgres -v "ON_ERROR_STOP=1"
+psql -U postgres -f ../../tmp/insert_user.sql -d postgres -v "ON_ERROR_STOP=1"
 
 psql_error_code=$?
 
-rm ../tmp/insert_user.sql
+rm ../../tmp/insert_user.sql
 
 if [ $psql_error_code -ne 0 ];
 then

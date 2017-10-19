@@ -18,15 +18,15 @@ then
     exit 1
 fi
 
-mkdir -p ../tmp
+mkdir -p ../../tmp
 
-cat ../sql/templates/get_password.template | sed -e "s/<username>/$username/g"  > ../tmp/get_password.sql
+cat ../../sql/templates/get_password.template | sed -e "s/<username>/$username/g"  > ../../tmp/get_password.sql
 
-PSWD=$(psql -U postgres -f ../tmp/get_password.sql -d postgres -t -q -v "ON_ERROR_STOP=1")
+PSWD=$(psql -U postgres -f ../../tmp/get_password.sql -d postgres -t -q -v "ON_ERROR_STOP=1")
 
 psql_error_code=$?
 
-rm ../tmp/get_password.sql
+rm ../../tmp/get_password.sql
 
 if [ $psql_error_code -ne 0 ];
 then

@@ -1,0 +1,2 @@
+INSERT INTO user_info (username,password)
+VALUES ('<username>','<password>');
