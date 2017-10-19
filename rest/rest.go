@@ -11,8 +11,10 @@ const SESSION_COOKIE = "session"
 
 func main(){
     http.HandleFunc("/signup", signup)
+    http.HandleFunc("/login", login)
 
     http.HandleFunc("/signup-submit", signupSubmit)
+    http.HandleFunc("/login-submit", loginSubmit)
 
     http.ListenAndServe(":80",nil)
 }
@@ -21,23 +23,51 @@ func signup(w http.ResponseWriter, r *http.Request){
     http.ServeFile(w, r, "../web/signup.html")
 }
 
+func login(w http.ResponseWriter, r *http.Request){
+    http.ServeFile(w, r, "../web/login.html")
+}
+
 func signupSubmit(w http.ResponseWriter, r *http.Request){
-    //Do not cache the signup
-    w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-    w.Header().Set("Pragma", "no-cache")
-    w.Header().Set("Expires", "0")
-    fmt.Println("here")
-    if r.Method == http.MethodPost {
+   clearCache(w)
+
+   if r.Method == http.MethodPost {
         r.ParseForm()
         if r.PostFormValue("password") == r.PostFormValue("confirm") {
-            args := []string{"../shell/insert.sh", "-u",r.PostFormValue("username"),"-p",r.PostFormValue("password")}
+            args := []string{"../shell/signup.sh", "-u", r.PostFormValue("username"),"-p", r.PostFormValue("password")}
             if err := exec.Command("bash", args...).Run(); err != nil{
-                fmt.Println("error sending database info",err)
+                fmt.Println("error sending database info", err)
                 return
             }
             fmt.Println(r.PostFormValue("username")," signup")
         }
     }
+}
+
+func loginSubmit(w http.ResponseWriter, r *http.Request){
+    clearCache(w)
+
+    if r.Method == http.MethodPost {
+        r.ParseForm()
+
+        args := []string("../shell/login.sh", "-u", r.PostFormValue("username"))
+        if output, err := exec.Command("bash", args...).Output(); err != nil || len(output) == 0 {
+            fmt.Println("Incorrect username")
+            return
+        }
+
+        password := string(output)
+        if password != r.PostFormValue("password") {
+            fmt.Println("Incorrect password")
+            return
+        }
+        fmt.Println("login complete")
+    }
+}
+
+func clearCache(w *http.ResponseWriter){
+    w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+    w.Header().Set("Pragma", "no-cache")
+    w.Header().Set("Expires", "0")
 }
 
 
