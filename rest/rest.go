@@ -34,7 +34,8 @@ func signupSubmit(w http.ResponseWriter, r *http.Request){
         r.ParseForm()
         if r.PostFormValue("password") == r.PostFormValue("confirm") {
             args := []string{"../shell/signup.sh", "-u", r.PostFormValue("username"),"-p", r.PostFormValue("password")}
-            if err := exec.Command("bash", args...).Run(); err != nil{
+            err := exec.Command("bash", args...).Run()
+            if err != nil {
                 fmt.Println("error sending database info", err)
                 return
             }
@@ -49,14 +50,16 @@ func loginSubmit(w http.ResponseWriter, r *http.Request){
     if r.Method == http.MethodPost {
         r.ParseForm()
 
-        args := []string("../shell/login.sh", "-u", r.PostFormValue("username"))
-        if output, err := exec.Command("bash", args...).Output(); err != nil || len(output) == 0 {
+        args := []string{"../shell/login.sh", "-u", r.PostFormValue("username")}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) == 0 {
             fmt.Println("Incorrect username")
             return
         }
 
-        password := string(output)
+        password := string(output[:len(output)-1])          //remove newline character from output
         if password != r.PostFormValue("password") {
+            fmt.Println(password, r.PostFormValue("password"))
             fmt.Println("Incorrect password")
             return
         }
@@ -64,7 +67,7 @@ func loginSubmit(w http.ResponseWriter, r *http.Request){
     }
 }
 
-func clearCache(w *http.ResponseWriter){
+func clearCache(w http.ResponseWriter){
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
     w.Header().Set("Expires", "0")
