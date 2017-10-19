@@ -16,7 +16,7 @@ func main(){
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
 
-    http.ListenAndServe(":80",nil)
+    http.ListenAndServe(":8080",nil)
 }
 
 func signup(w http.ResponseWriter, r *http.Request){
