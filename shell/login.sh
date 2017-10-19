@@ -12,7 +12,7 @@ while getopts ":u:" opt; do
     esac
 done
 
-if [-z $username ]; 
+if [ -z $username ]; 
 then
     echo $usage;
     exit 1
@@ -22,7 +22,7 @@ mkdir -p ../tmp
 
 cat ../sql/templates/get_password.template | sed -e "s/<username>/$username/g"  > ../tmp/get_password.sql
 
-psql -U postgres -f ../tmp/get_password.sql -d postgress -t -v "ON_ERROR_STOP=1"
+PSWD=$(psql -U postgres -f ../tmp/get_password.sql -d postgres -t -q -v "ON_ERROR_STOP=1")
 
 psql_error_code=$?
 
@@ -32,5 +32,7 @@ if [ $psql_error_code -ne 0 ];
 then
     exit $psql_error_code;
 fi
+
+echo $PSWD
 
 exit $?
