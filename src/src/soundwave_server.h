@@ -5,15 +5,19 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <netinet/in.h>
-#include <iostream>
 #include <cstring>
+#include <iostream>
+#include <fstream>
 
-class SoundwaveServer{
+
+class SoundwaveServer {
 public:
     SoundwaveServer();
     void run();
+
 private:
     int serverSocket;
+    int bufferSize;
     struct sockaddr_in saddr;
 };
 
