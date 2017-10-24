@@ -18,13 +18,18 @@ void SoundwaveServer::run() {
         int n;
 
         n = read(client, buffer, bufferSize);
+        std::cout << buffer << std::endl;
         int fileSize = atoi(buffer);
         int remainingData = fileSize;
         memset(buffer, 0, bufferSize);
 
-        n = read(client, buffer, bufferSize);
-        std::string filename(buffer);
-        memset(buffer, 0, bufferSize);
+        std::cout << fileSize << std::endl;
+
+        //n = read(client, buffer, bufferSize);
+        //std::string filename(buffer);
+        //memset(buffer, 0, bufferSize);
+
+        std::string filename = "sound.wav";
 
         std::ofstream fileStream;
         fileStream.open(filename);

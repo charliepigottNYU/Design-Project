@@ -6,6 +6,7 @@ import (
     "fmt"
     "net"
     "net/http"
+    "strconv"
     //"time"
 )
 
@@ -51,7 +52,8 @@ func upload(w http.ResponseWriter, r *http.Request) {
             fmt.Println("error connecting to port 5000", err)
             return
         }
-        fmt.Fprintf(conn, string(header.Size), header.Filename)
+        fmt.Fprintf(conn, strconv.FormatInt(header.Size, 10))
+        fmt.Println(strconv.FormatInt(header.Size, 10))
         sendBuffer := make([]byte, BUFFER_SIZE)
         for {
             _, err = file.Read(sendBuffer)
