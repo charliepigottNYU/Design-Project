@@ -7,6 +7,7 @@ import (
     "net"
     "net/http"
     "strconv"
+    "mime/multipart"
     //"time"
 )
 
@@ -44,24 +45,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
             fmt.Println("error opening file", err)
             return
         }
-
-        fmt.Println(header.Filename, header.Size)
-        conn, err := net.Dial("tcp","127.0.0.1:5000")
-        defer conn.Close()
-        if err != nil {
-            fmt.Println("error connecting to port 5000", err)
-            return
-        }
-        fmt.Fprintf(conn, strconv.FormatInt(header.Size, 10))
-        fmt.Println(strconv.FormatInt(header.Size, 10))
-        sendBuffer := make([]byte, BUFFER_SIZE)
-        for {
-            _, err = file.Read(sendBuffer)
-            if err == io.EOF {
-                break
-            }
-            conn.Write(sendBuffer)
-        }
+        sendFile(file, header)
         fmt.Println("send finish")
     }
 }
@@ -112,6 +96,25 @@ func clearCache(w http.ResponseWriter) {
     w.Header().Set("Expires", "0")
 }
 
+func sendFile(file multipart.File, header *multipart.FileHeader){
+    fmt.Println(header.Filename, header.Size)
+    conn, err := net.Dial("tcp","127.0.0.1:5000")
+    defer conn.Close()
+    if err != nil {
+        fmt.Println("error connecting to port 5000", err)
+        return
+    }
+    fmt.Fprintf(conn, strconv.FormatInt(header.Size, 10))
+    fmt.Println(strconv.FormatInt(header.Size, 10))
+    sendBuffer := make([]byte, BUFFER_SIZE)
+    for {
+        _, err = file.Read(sendBuffer)
+        if err == io.EOF {
+            break
+        }
+        conn.Write(sendBuffer)
+    }
+}
 
 //cookie stuff to do later
 /*
