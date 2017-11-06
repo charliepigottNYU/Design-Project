@@ -15,16 +15,18 @@ const SESSION_COOKIE = "session"
 const BUFFER_SIZE = 1024
 
 func main() {
+    //rest API built using golangs http library
     http.HandleFunc("/signup", signup)
     http.HandleFunc("/login", login)
     http.HandleFunc("/file_upload",upload)
-
+    http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
 
     http.ListenAndServe(":8080",nil)
 }
 
+//redirects to relivant http pages
 func signup(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "../../web/signup.html")
 }
@@ -33,6 +35,14 @@ func login(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "../../web/login.html")
 }
 
+func play(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    if r.Method == http.MethodGet {
+        http.ServeFile(w, r, "../src/sound.mp3")
+    }
+}
+
+//gets song information from user and sends it to filesystem
 func upload(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
     if r.Method == http.MethodGet {
@@ -50,6 +60,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+//signup calls shell script to store info in databse, returns error if the username already exists
 func signupSubmit(w http.ResponseWriter, r *http.Request) {
    clearCache(w)
 
@@ -67,6 +78,7 @@ func signupSubmit(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+//login submit functions similarly to signup with shell scripts as the means to interact with the database
 func loginSubmit(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
 
@@ -96,6 +108,7 @@ func clearCache(w http.ResponseWriter) {
     w.Header().Set("Expires", "0")
 }
 
+//sends file information over tcp to the filesystem, connects on port 5000
 func sendFile(file multipart.File, header *multipart.FileHeader){
     fmt.Println(header.Filename, header.Size)
     conn, err := net.Dial("tcp","127.0.0.1:5000")

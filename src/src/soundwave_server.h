@@ -12,7 +12,11 @@
 
 class SoundwaveServer {
 public:
+    //contsructor for soundwave server. Initialized serversocket, bufferSize and saddr
+    //to correct values for running a server over tcp.
     SoundwaveServer();
+    //run is a loop that continuously accepts connections and then recieves song information over tcp
+    //it creates song files in the filesystem based on the user info sent over tcp
     void run();
 
 private:
