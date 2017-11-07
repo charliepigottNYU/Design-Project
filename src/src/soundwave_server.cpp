@@ -1,5 +1,6 @@
 #include "soundwave_server.h"
 
+SoundwaveServer* SoundwaveServer::instance = nullptr;
 
 SoundwaveServer::SoundwaveServer(): bufferSize(1024) {
     //create server file descriptor
@@ -12,39 +13,52 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024) {
     bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr));
 }
 
+SoundwaveServer* SoundwaveServer::getInstance() {
+    if (instance == nullptr) {
+        instance = new SoundwaveServer();
+    }
+    return instance;
+}
+
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     listen(serverSocket, 10);
-    char buffer[bufferSize];
     while(true) {
         int client = accept(serverSocket, NULL, NULL);
-        int n;
-        //read in file size
-        n = read(client, buffer, bufferSize);
-        std::cout << buffer << std::endl;
-        int fileSize = atoi(buffer);
-        int remainingData = fileSize;
-        memset(buffer, 0, bufferSize);
+        std::thread runClient(&SoundwaveServer::handleClient, this, client);
+        runClient.detach();
+   }
+}
 
-        std::cout << fileSize << std::endl;
 
-        //currently sound.mp3 for testing purposes
-        std::string filename = "sound.mp3";
+void SoundwaveServer::handleClient(int client) {
+    char* buffer = new char[bufferSize];
+    //read in file size
+    int n = read(client, buffer, bufferSize);
+    std::cout << buffer << std::endl;
+    int fileSize = atoi(buffer);
+    int remainingData = fileSize;
+    memset(buffer, 0, bufferSize);
 
-        std::ofstream fileStream;
-        fileStream.open(filename);
-        if (!fileStream) {  // NOTE: improve error handling
-            std::cout << "File opening failed" << std::endl;
-            std::exit(1);
-        }
-        //read in song file
-        while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
-            std::cout << buffer;  // NOTE: remove
-            fileStream.write(buffer, n);
-            remainingData -= n;
-            memset(buffer, 0, bufferSize);
-        }
+    std::cout << fileSize << std::endl;
 
-        fileStream.close();
+    //currently sound.mp3 for testing purposes
+    std::string filename = "sound.mp3";
+
+    std::ofstream fileStream;
+    fileStream.open(filename);
+    if (!fileStream) {  // NOTE: improve error handling
+        std::cout << "File opening failed" << std::endl;
+        std::exit(1);
     }
+    //read in song file
+    while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
+        std::cout << buffer;  // NOTE: remove
+        fileStream.write(buffer, n);
+        remainingData -= n;
+        memset(buffer, 0, bufferSize);
+    }
+
+    fileStream.close();
+    close(client);
 }

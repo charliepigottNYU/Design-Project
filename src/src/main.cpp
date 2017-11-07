@@ -1,8 +1,7 @@
 #include "soundwave_server.h"
 
-
 int main() {
-    SoundwaveServer s;
-    s.run();
+    SoundwaveServer* server = SoundwaveServer::getInstance();
+    server->run();
     return 0;
 }
