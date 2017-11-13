@@ -59,6 +59,7 @@ void SoundwaveServer::handleClient(int client) {
         memset(buffer, 0, bufferSize);
     }
 
+    delete buffer;
     fileStream.close();
     close(client);
 }

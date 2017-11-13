@@ -1,21 +1,26 @@
 package main
 
 import (
-    "io"
-    "os/exec"
+    . "./rest_log"
     "fmt"
+    "io"
+    "log"
+    "os/exec"
     "net"
     "net/http"
     "strconv"
     "mime/multipart"
-    //"time"
+    "time"
 )
 
 const SESSION_COOKIE = "session"
 const BUFFER_SIZE = 1024
 
+var LOGGER map[int]*log.Logger
+
 func main() {
     //rest API built using golangs http library
+    http.HandleFunc("/welcome", welcome)
     http.HandleFunc("/signup", signup)
     http.HandleFunc("/login", login)
     http.HandleFunc("/file_upload",upload)
@@ -23,10 +28,15 @@ func main() {
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
 
+    LOGGER = InitLog("../../log/rest.log")
     http.ListenAndServe(":8080",nil)
 }
 
 //redirects to relivant http pages
+func welcome(w http.ResponseWriter, r *http.Request) {
+    http.ServeFile(w, r, "../../web/welcome.html")
+}
+
 func signup(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "../../web/signup.html")
 }
@@ -56,7 +66,6 @@ func upload(w http.ResponseWriter, r *http.Request) {
             return
         }
         sendFile(file, header)
-        fmt.Println("send finish")
     }
 }
 
@@ -70,10 +79,11 @@ func signupSubmit(w http.ResponseWriter, r *http.Request) {
             args := []string{"../../shell/signup.sh", "-u", r.PostFormValue("username"),"-p", r.PostFormValue("password")}
             err := exec.Command("bash", args...).Run()
             if err != nil {
-                fmt.Println("error sending database info", err)
+                LOGGER[ERROR].Println("error sending database info", err)
                 return
             }
             fmt.Println(r.PostFormValue("username")," signup")
+            http.SetCookie(w, genCookie(r.PostFormValue("username")))
         }
     }
 }
@@ -88,14 +98,14 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
         args := []string{"../../shell/login.sh", "-u", r.PostFormValue("username")}
         output, err := exec.Command("bash", args...).Output()
         if err != nil || len(output) == 0 {
-            fmt.Println("Incorrect username")
+            LOGGER[INFO].Println("Username does not exist", r.PostFormValue("username"))
             return
         }
 
         password := string(output[:len(output)-1])          //remove newline character from output
         if password != r.PostFormValue("password") {
-            fmt.Println(password, r.PostFormValue("password"))
-            fmt.Println("Incorrect password")
+            LOGGER[INFO].Println("Incorrect Password",
+                r.PostFormValue("username"), r.PostFormValue("password"))
             return
         }
         fmt.Println("login complete")
@@ -110,15 +120,14 @@ func clearCache(w http.ResponseWriter) {
 
 //sends file information over tcp to the filesystem, connects on port 5000
 func sendFile(file multipart.File, header *multipart.FileHeader){
-    fmt.Println(header.Filename, header.Size)
+    LOGGER[INFO].Println("New Song Upload:", header.Filename, header.Size)
     conn, err := net.Dial("tcp","127.0.0.1:5000")
     defer conn.Close()
     if err != nil {
-        fmt.Println("error connecting to port 5000", err)
+        LOGGER[ERROR].Println("error connecting to port 5000", err)
         return
     }
     fmt.Fprintf(conn, strconv.FormatInt(header.Size, 10))
-    fmt.Println(strconv.FormatInt(header.Size, 10))
     sendBuffer := make([]byte, BUFFER_SIZE)
     for {
         _, err = file.Read(sendBuffer)
@@ -129,8 +138,6 @@ func sendFile(file multipart.File, header *multipart.FileHeader){
     }
 }
 
-//cookie stuff to do later
-/*
 func getCookie(w http.ResponseWriter, r *http.Request) (bool, *http.Cookie){
     cookie, _ := r.Cookie(SESSION_COOKIE)
     if cookie == nil {
@@ -142,8 +149,8 @@ func getCookie(w http.ResponseWriter, r *http.Request) (bool, *http.Cookie){
 func genCookie(id string) *http.Cookie {
     return &http.Cookie{
         Name: SESSION_COOKIE,
-        Value: id
-        Expires: time.Now().add(24 * time.Hour)
+        Value: id,
+        Expires: time.Now().Add(24 * time.Hour),
     }
 }
-*/
+
