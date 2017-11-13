@@ -33,14 +33,19 @@ void SoundwaveServer::run() {
 
 void SoundwaveServer::handleClient(int client) {
     char* buffer = new char[bufferSize];
-    //read in file size
-    int n = read(client, buffer, bufferSize);
-    std::cout << buffer << std::endl;
-    int fileSize = atoi(buffer);
-    int remainingData = fileSize;
     memset(buffer, 0, bufferSize);
-
-    std::cout << fileSize << std::endl;
+    //read in username size
+    uint8_t userSize;
+    read(client, &userSize, sizeof(uint8_t));
+    std::cout << userSize << std::endl;
+    read(client, buffer, userSize);
+    std::cout << buffer << std::endl;
+    //read in file size
+    int64_t songSize;
+    int n = read(client, &songSize, sizeof(int64_t));
+    std::cout << songSize << std::endl;
+    int64_t remainingData = songSize;
+    memset(buffer, 0, bufferSize);
 
     //currently sound.mp3 for testing purposes
     std::string filename = "sound.mp3";
