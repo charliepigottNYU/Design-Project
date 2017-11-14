@@ -64,11 +64,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodGet {
         http.ServeFile(w, r, "../../web/file_upload.html")
     } else if r.Method == http.MethodPost {
+        LOGGER[INFO].Println("new song upload")
         r.ParseForm()
         file, header, err := r.FormFile("song")
         defer file.Close()
         if err != nil {
-            fmt.Println("error opening file", err)
+            LOGGER[ERROR].Println("error opening file", err)
             return
         }
         sendFile(w, r, file, header)

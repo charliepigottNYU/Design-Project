@@ -35,15 +35,12 @@ void SoundwaveServer::handleClient(int client) {
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
     //read in username size
-    uint8_t userSize;
+    uint8_t userSize = 0;
     read(client, &userSize, sizeof(uint8_t));
-    std::cout << userSize << std::endl;
     read(client, buffer, userSize);
-    std::cout << buffer << std::endl;
     //read in file size
     int64_t songSize;
     int n = read(client, &songSize, sizeof(int64_t));
-    std::cout << songSize << std::endl;
     int64_t remainingData = songSize;
     memset(buffer, 0, bufferSize);
 
@@ -58,7 +55,6 @@ void SoundwaveServer::handleClient(int client) {
     }
     //read in song file
     while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
-        std::cout << buffer;  // NOTE: remove
         fileStream.write(buffer, n);
         remainingData -= n;
         memset(buffer, 0, bufferSize);
