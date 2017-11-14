@@ -8,12 +8,16 @@
 
 #include "soundwave_database.h"
 
+class SoundwaveUser;
+
 class SoundwaveFilesystem {
     static SoundwaveFilesystem* instance;
 
     SoundwaveFilesystem();
 
     static SoundwaveFilesystem* getInstance();
+
+    friend SoundwaveUser::SoundwaveUser();
 
 public:
     /*
