@@ -17,11 +17,11 @@ public:
       returns true if song file is created/opened
       does not fill the song file with any data
     */
-    bool createSong(std::ofstream& ofs, std::string user, std::string songPath);
+    bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songPath);
 
-    void deleteSong(std::string user, std::string songPath);
+    //void deleteSong(std::string user, std::string songPath);
     
-    void voteSong(std::string user, std::string songPath);
+    //void voteSong(std::string user, std::string songPath);
 };
 
 #endif
