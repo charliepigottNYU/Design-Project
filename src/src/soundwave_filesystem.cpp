@@ -4,17 +4,17 @@ SoundwaveFilesystem* SoundwaveFilesystem::instance = nullptr;
 
 using namespace std;
 
-bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const string& songPath) {
-    bool created = SoundwaveDatabase::createSong(user, songPath);
+bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const string& songName) {
+    bool created = SoundwaveDatabase::createSong(user, songName); // we should be generating the song path first? the database only stores song paths?
     if (!created) {
         return false;
     }
-    ofs.open(songPath);
+    ofs.open(songName);
     if (!ofs) {
         return false;
     }
     struct stat st = {0};
-    if (stat(songPath.c_str(), &st) == -1) {
-        mkdir(songPath, 0777);
+    if (stat(songName.c_str(), &st) == -1) {
+        mkdir(songName, 0777);
     }
 }

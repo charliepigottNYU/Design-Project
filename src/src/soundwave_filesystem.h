@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <ofstream>
 
 #include "soundwave_database.h"
 
@@ -12,9 +13,9 @@ class SoundwaveFilesystem {
 
     SoundwaveFilesystem();
 
-public:
     static SoundwaveFilesystem* getInstance();
 
+public:
     /*
       Checks if the song is a valid song name, creates and opens the file if it is valid
       modifies the database to include the new song.
@@ -23,11 +24,11 @@ public:
       returns true if song file is created/opened
       does not fill the song file with any data
     */
-    bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songPath);
+    bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songName);
 
-    //void deleteSong(std::string user, std::string songPath);
+    //void deleteSong(std::string user, std::string songName);
     
-    //void voteSong(std::string user, std::string songPath);
+    //void voteSong(std::string user, std::string songName);
 };
 
 #endif
