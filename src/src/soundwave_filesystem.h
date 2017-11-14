@@ -1,6 +1,12 @@
 #ifndef SOUNDWAVE_FILESYSTEM
 #define SOUNDWAVE_FILESYSTEM
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "soundwave_database.h"
+
 class SoundwaveFilesystem {
     static SoundwaveFilesystem* instance;
 
