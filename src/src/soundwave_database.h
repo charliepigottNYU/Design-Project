@@ -1,6 +1,8 @@
 #ifndef SOUNDWAVE_DATABASE
 #define SOUNDWAVE_DATABASE
 
+#include <unistd.h>
+
 class SoundwaveDatabase {
 public:
     static bool createSong(std::string user, std::string songPath);
