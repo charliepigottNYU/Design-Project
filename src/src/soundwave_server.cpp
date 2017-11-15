@@ -23,7 +23,7 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     listen(serverSocket, 10);
-    while(true) {
+    while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
         std::thread runClient(&SoundwaveServer::handleClient, this, client);
         runClient.detach();
