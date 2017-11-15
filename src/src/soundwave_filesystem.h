@@ -3,8 +3,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <fstream>
+#include <vector>
 
 #include "soundwave_user.h"
 #include "soundwave_database.h"
@@ -29,6 +31,7 @@ public:
     */
     bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songName);
 
+    std::vector<std::string> getAllSongs(const std::string& user);
     //void deleteSong(std::string user, std::string songName);
     
     //void voteSong(std::string user, std::string songName);
