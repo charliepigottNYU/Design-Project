@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 #include "soundwave_user.h"
 #include "soundwave_database.h"
