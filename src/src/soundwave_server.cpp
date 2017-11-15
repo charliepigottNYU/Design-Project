@@ -45,8 +45,8 @@ void SoundwaveServer::handleClient(int client) {
     maplock.lock();
     auto userItr = users.find(username);
     if (userItr == users.cend()) {
-        users.insert(pair<string,SoundwaveUser>(username,SoundwaveUser(username)));
-        user = &users[username];
+        users.emplace(make_pair(username, SoundwaveUser(username)));
+        user = &users.at(username);
         user->initUnlock(maplock);
     } else {
         user = &(userItr->second);

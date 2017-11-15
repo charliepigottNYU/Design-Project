@@ -14,7 +14,7 @@
 class SoundwaveFilesystem {
     static SoundwaveFilesystem* instance;
 
-    SoundwaveFilesystem();
+    //SoundwaveFilesystem();
 
     static SoundwaveFilesystem* getInstance();
 

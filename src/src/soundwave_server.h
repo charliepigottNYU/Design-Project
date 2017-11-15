@@ -11,6 +11,8 @@
 #include <thread>
 #include <map>
 #include <mutex>
+#include <utility>
+#include <string>
 
 #include "soundwave_filesystem.h"
 #include "soundwave_user.h"

@@ -3,9 +3,11 @@
 
 #include <vector>
 #include <mutex>
-#include "soundwave_filesystem.h"
+#include <string>
+#include <fstream>
+//#include "soundwave_filesystem.h"
 
-class SoundwaveFilesystem;
+//class SoundwaveFilesystem;
 
 class SoundwaveUser {
 public:
@@ -21,7 +23,7 @@ public:
 private:
     std::string username;
     std::vector<std::string> songs;
-    SoundwaveFilesystem* sfs;
+    //SoundwaveFilesystem* sfs;
     std::mutex userlock;
 };
 
