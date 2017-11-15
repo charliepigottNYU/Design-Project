@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <map>
 
 #include "soundwave_filesystem.h"
 #include "soundwave_user.h"
@@ -26,6 +27,7 @@ public:
     
     void handleClient(int client);
 private:
+    std::map<std::string, SoundwaveUser> users;
     int serverSocket;
     int bufferSize;
     struct sockaddr_in saddr;

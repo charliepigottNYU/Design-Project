@@ -2,7 +2,7 @@
 
 SoundwaveServer* SoundwaveServer::instance = nullptr;
 
-SoundwaveServer::SoundwaveServer(): bufferSize(1024) {
+SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     //create server file descriptor
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&saddr, 0, sizeof(saddr));
