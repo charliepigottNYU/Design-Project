@@ -1,5 +1,7 @@
 #include "soundwave_server.h"
 
+using namespace std;
+
 SoundwaveServer* SoundwaveServer::instance = nullptr;
 
 SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
@@ -25,7 +27,7 @@ void SoundwaveServer::run() {
     listen(serverSocket, 10);
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
-        std::thread runClient(&SoundwaveServer::handleClient, this, client);
+        thread runClient(&SoundwaveServer::handleClient, this, client);
         runClient.detach();
    }
 }
@@ -38,6 +40,18 @@ void SoundwaveServer::handleClient(int client) {
     uint8_t userSize = 0;
     read(client, &userSize, sizeof(uint8_t));
     read(client, buffer, userSize);
+    string username(buffer);
+    SoundwaveUser* user;
+    maplock.lock();
+    auto userItr = users.find(username);
+    if (userItr == users.cend()) {
+        users[username] = move(SoundwaveUser(username));
+        user = &users[username];
+        user->initUnlock(maplock);
+    } else {
+        user = &(userItr->second);
+        maplock.unlock();
+    }
     //read in file size
     int64_t songSize;
     int n = read(client, &songSize, sizeof(int64_t));
@@ -45,13 +59,13 @@ void SoundwaveServer::handleClient(int client) {
     memset(buffer, 0, bufferSize);
 
     //currently sound.mp3 for testing purposes
-    std::string filename = "sound.mp3";
+    string filename = "sound.mp3";
 
-    std::ofstream fileStream;
+    ofstream fileStream;
     fileStream.open(filename);
     if (!fileStream) {  // NOTE: improve error handling
-        std::cout << "File opening failed" << std::endl;
-        std::exit(1);
+        cout << "File opening failed" << endl;
+        exit(1);
     }
     //read in song file
     while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {

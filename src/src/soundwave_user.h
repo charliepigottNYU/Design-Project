@@ -12,7 +12,9 @@ public:
 
     SoundwaveUser(std::string& username);
 
-    void initUnlock(std::mutex toUnlock);
+    SoundwaveUser(SoundwaveUser&& swUser);
+
+    void initUnlock(std::mutex& toUnlock);
 
     bool createSong(std::ofstream& ofs, const std::string& songName);
 

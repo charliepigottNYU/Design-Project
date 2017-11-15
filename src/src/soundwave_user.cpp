@@ -6,7 +6,10 @@ SoundwaveUser::SoundwaveUser(string& username): username(username) {
     sfs = SoundwaveFilesystem::getInstance();
 }
 
-void SoundwaveUser::initUnlock(mutex toUnlock) {
+SoundwaveUser::SoundwaveUser(SoundwaveUser&& swUser): username(move(swUser.username)),
+    songs(move(swUser.songs)), sfs(swUser.sfs), userlock(move(swUser.userlock)) {}
+
+void SoundwaveUser::initUnlock(mutex& toUnlock) {
     userlock.lock();
     toUnlock.unlock();
     songs = move(sfs->getAllSongs(username));
