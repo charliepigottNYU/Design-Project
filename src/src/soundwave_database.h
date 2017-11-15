@@ -2,6 +2,7 @@
 #define SOUNDWAVE_DATABASE
 
 #include <unistd.h>
+#include <sys/types.h>
 
 class SoundwaveDatabase {
 public:
