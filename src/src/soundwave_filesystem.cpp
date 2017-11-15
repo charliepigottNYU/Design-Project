@@ -18,3 +18,4 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
         mkdir(songName, 0777);
     }
 }
+

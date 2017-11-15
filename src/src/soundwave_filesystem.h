@@ -4,11 +4,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <ofstream>
+#include <fstream>
 
+#include "soundwave_user.h"
 #include "soundwave_database.h"
-
-class SoundwaveUser;
 
 class SoundwaveFilesystem {
     static SoundwaveFilesystem* instance;
@@ -17,7 +16,7 @@ class SoundwaveFilesystem {
 
     static SoundwaveFilesystem* getInstance();
 
-    friend SoundwaveUser::SoundwaveUser();
+    friend SoundwaveUser::SoundwaveUser(std::string& username);
 
 public:
     /*

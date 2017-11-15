@@ -10,6 +10,10 @@
 #include <fstream>
 #include <thread>
 
+#include "soundwave_filesystem.h"
+#include "soundwave_user.h"
+#include "soundwave_database.h"
+
 class SoundwaveServer {
     static SoundwaveServer* instance;
     //contsructor for soundwave server. Initialized serversocket, bufferSize and saddr
