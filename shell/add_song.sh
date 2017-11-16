@@ -3,13 +3,11 @@
 export PGPASSWORD=CS4523
 usage="Usage: -u <username> -p <path>"
 
-echo $@
-
 while getopts ":u:p:" opt; do
     case $opt in
-        u) username="$OPTARG"; echo $OPTARG;
+        u) username="$OPTARG"; 
         ;;
-        p) song_path="$OPTARG"; echo $OPTARG;
+        p) song_path="$OPTARG"; 
         ;;
         \?) echo $usage;  exit 1;
         ;;
@@ -18,14 +16,13 @@ done
 
 if [ -z $username ] || [ -z $song_path ];
 then
-    echo "both arent set";
     echo $usage;
     exit 1
 fi
 
 mkdir -p ../../tmp
 
-cat ../../sql/templates/insert_song.template | sed -e "s/<username>/$username/g" -e "s/<song_path>/$song_path/g" > ../../tmp/insert_song.sql
+cat ../../sql/templates/insert_song.template | sed -e "s/<username>/$username/g" -e "s@<song_path>@$song_path@g" > ../../tmp/insert_song.sql
 
 psql -U postgres -f ../../tmp/insert_song.sql -d postgres -v "ON_ERROR_STOP=1"
 

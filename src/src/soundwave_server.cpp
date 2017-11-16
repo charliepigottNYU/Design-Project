@@ -26,7 +26,9 @@ void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     listen(serverSocket, 10);
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
+        cout << "before accept" << endl;
         int client = accept(serverSocket, NULL, NULL);
+        cout << "after accept" << endl;
         thread runClient(&SoundwaveServer::handleClient, this, client);
         runClient.detach();
    }
@@ -34,6 +36,7 @@ void SoundwaveServer::run() {
 
 
 void SoundwaveServer::handleClient(int client) {
+    cout << "enter";
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
     //read in username size
@@ -87,4 +90,5 @@ void SoundwaveServer::handleClient(int client) {
     delete[] buffer;
     fileStream.close();
     close(client);
+    cout << "Exit";
 }

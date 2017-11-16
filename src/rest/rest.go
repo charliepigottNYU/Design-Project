@@ -133,11 +133,11 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
 
     LOGGER[INFO].Println("New Song Upload:", header.Filename, header.Size)
     conn, err := net.Dial("tcp","127.0.0.1:5000")
-    defer conn.Close()
     if err != nil {
         LOGGER[ERROR].Println("error connecting to port 5000", err)
         return
     }
+    defer conn.Close()
     cookie, ok := getCookie(w, r)
     if !ok {
         LOGGER[INFO].Println("session cookie not found")
@@ -166,7 +166,7 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
 
     fmt.Fprintf(conn, header.Filename)
 
-    var result uint8
+    var result uint8 = 0
     binary.Read(conn, binary.LittleEndian, &result)
     if result == 0 {
         LOGGER[WARNING].Println("Invalid song name:", header.Filename)
