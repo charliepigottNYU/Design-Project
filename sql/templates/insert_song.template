@@ -1,2 +1,2 @@
 INSERT INTO song_info (song_path, username)
-VALUES ('<song_info>','<username>');
+VALUES ('<song_path>','<username>');

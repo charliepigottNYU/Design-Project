@@ -7,7 +7,7 @@ while getopts ":u:p:" opt; do
     case $opt in
         u) username="$OPTARG"; 
         ;;
-        p) song_path="$OPTARG"; 
+        p) song_path="$OPTARG"; echo $OPTARG; 
         ;;
         \?) echo $usage;  exit 1;
         ;;
