@@ -12,14 +12,15 @@
 #include "soundwave_user.h"
 #include "soundwave_database.h"
 
+
 class SoundwaveFilesystem {
     static SoundwaveFilesystem* instance;
 
-    //SoundwaveFilesystem();
+    SoundwaveFilesystem();
 
     static SoundwaveFilesystem* getInstance();
 
-    friend SoundwaveUser::SoundwaveUser(std::string& username);
+    friend class SoundwaveUser;
 
 public:
     /*

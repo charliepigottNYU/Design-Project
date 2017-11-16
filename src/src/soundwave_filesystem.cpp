@@ -4,6 +4,15 @@ SoundwaveFilesystem* SoundwaveFilesystem::instance = nullptr;
 
 using namespace std;
 
+SoundwaveFilesystem* SoundwaveFilesystem::getInstance() {
+    if (instance == nullptr) {
+        instance = new SoundwaveFilesystem();
+    }
+    return instance;
+}
+
+SoundwaveFilesystem::SoundwaveFilesystem(){}
+
 bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const string& songName) {
     string songPath = "../../data/" + user + "/" + songName;
     bool created = SoundwaveDatabase::createSong(user, songPath); // we should be generating the song path first? the database only stores song paths?
@@ -19,7 +28,7 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
     cout << "path: " << songPath << ", folder: " << folder <<endl;
     struct stat st = {0};
     if (stat(folder.c_str(), &st) == -1) {
-        mkdir(folder, 0777);
+        mkdir(folder.c_str(), 0777);
     }
     return true;
 }
@@ -29,7 +38,7 @@ vector<string> SoundwaveFilesystem::getAllSongs(const string& user) {
     vector<string> songs;
     DIR* directory;
     if ((directory = opendir(path.c_str())) == NULL) {
-        mkdir(path, 0777);
+        mkdir(path.c_str(), 0777);
         return songs;
     }
     struct dirent* entry;
@@ -38,7 +47,7 @@ vector<string> SoundwaveFilesystem::getAllSongs(const string& user) {
         string name = entry->d_name;
         string songPath = path + "/" + name;
         //skip unopenable files and directories
-        if (stat(songPath, &st) == -1 || S_ISDIR(st.st_mode)) {
+        if (stat(songPath.c_str(), &st) == -1 || S_ISDIR(st.st_mode)) {
             continue;
         }
         songs.push_back(name);
