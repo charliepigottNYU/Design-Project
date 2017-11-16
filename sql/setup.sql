@@ -12,7 +12,7 @@ CREATE TABLE user_info(
 
 CREATE TABLE song_info(
     song_path   TEXT    UNIQUE NOT NULL,
-    username    TEXT           NOT NULL,
+    creator     TEXT           NOT NULL,
     name        TEXT           NOT NULL,
     PRIMARY KEY (song_path, username),
     FOREIGN KEY (username) REFERENCES user_info (username)
@@ -30,5 +30,6 @@ CREATE TABLE song_contributers(
     song_path       TEXT    NOT NULL,
     contributer     TEXT    NOT NULL,
     PRIMARY KEY(song_path, contributer),
-    FOREIGN KEY(song_path) REFERENCES song_info(song_path)
+    FOREIGN KEY(song_path)   REFERENCES song_info(song_path),
+    FOREIGN KEY(contributer) REFERENCES user_info(username)
 );
