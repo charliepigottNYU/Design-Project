@@ -14,8 +14,8 @@ SoundwaveFilesystem* SoundwaveFilesystem::getInstance() {
 SoundwaveFilesystem::SoundwaveFilesystem(){}
 
 bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const string& songName) {
-    string songPath = "../../data/" + user + "/" + songName;
-    bool created = SoundwaveDatabase::createSong(user, songPath); // we should be generating the song path first? the database only stores song paths?
+    string songPath = user + "/" + songName;
+    bool created = SoundwaveDatabase::createSong(user, songName, songPath); // we should be generating the song path first? the database only stores song paths?
     if (!created) {
         return false;
     }

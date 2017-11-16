@@ -1,2 +1,2 @@
-INSERT INTO song_info (song_path, username)
-VALUES ('<song_path>','<username>');
+INSERT INTO song_info (song_path, username, name)
+VALUES ('<song_path>','<username>','<name>');
