@@ -155,6 +155,24 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
     //send username
     fmt.Fprintf(conn, cookie.Value)
 
+    //send length of file name over network then file name
+    var fileNameSize int64
+    fileNameSize = int64(len(header.Filename))
+    err = binary.Write(conn, binary.LittleEndian, fileNameSize)
+    if err != nil {
+        LOGGER[ERROR].Println("binary.Write failed:", err)
+        return
+    }
+
+    fmt.Fprintf(conn, header.Filename)
+
+    var result uint8
+    binary.Read(conn, binary.LittleEndian, &result)
+    if result == 0 {
+        LOGGER[WARNING].Println("Invalid song name:", header.Filename)
+        return
+    }
+
     //send the size of the song file, then the size
     err = binary.Write(conn, binary.LittleEndian, header.Size)
     if err != nil {

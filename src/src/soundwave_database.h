@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string>
+#include <iostream>
 
 class SoundwaveDatabase {
 public:

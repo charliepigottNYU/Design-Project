@@ -12,11 +12,14 @@ SoundwaveUser::SoundwaveUser(SoundwaveUser&& swUser): username(move(swUser.usern
 void SoundwaveUser::initUnlock(mutex& toUnlock) {
     userlock.lock();
     toUnlock.unlock();
-    songs = move(sfs->getAllSongs(username));
+    songs = sfs->getAllSongs(username);
     userlock.unlock();
 }
 
 bool SoundwaveUser::createSong(ofstream& ofs, const string& songName) {
-    return true;
+    userlock.lock();
+    bool result = sfs->createSong(ofs, username, songName);
+    userlock.unlock();
+    return result;
 }
 

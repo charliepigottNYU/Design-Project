@@ -3,19 +3,22 @@
 export PGPASSWORD=CS4523
 usage="Usage: -u <username> -p <path>"
 
+echo $@
+
 while getopts ":u:p:" opt; do
     case $opt in
-        u) username="$OPTARG"
+        u) username="$OPTARG"; echo $OPTARG;
         ;;
-        p) song_path="$OPTARG"
+        p) song_path="$OPTARG"; echo $OPTARG;
         ;;
-        \?) echo $usage; exit 1;
+        \?) echo $usage;  exit 1;
         ;;
     esac
 done
 
 if [ -z $username ] || [ -z $song_path ];
 then
+    echo "both arent set";
     echo $usage;
     exit 1
 fi

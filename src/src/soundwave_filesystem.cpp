@@ -23,7 +23,7 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
     if (!ofs) {
         return false;
     }
-    size_t dotPos = songPath.find(".");
+    size_t dotPos = songPath.rfind(".");
     string folder = songPath.substr(0, dotPos);
     cout << "path: " << songPath << ", folder: " << folder <<endl;
     struct stat st = {0};

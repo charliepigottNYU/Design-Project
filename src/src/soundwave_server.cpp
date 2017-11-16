@@ -40,8 +40,10 @@ void SoundwaveServer::handleClient(int client) {
     uint8_t userSize = 0;
     read(client, &userSize, sizeof(uint8_t));
     read(client, buffer, userSize);
-    string username(buffer);
-    SoundwaveUser* user;
+    string username = buffer;
+    memset(buffer, 0, bufferSize);
+
+    SoundwaveUser* user = nullptr;
     maplock.lock();
     auto userItr = users.find(username);
     if (userItr == users.cend()) {
@@ -52,21 +54,29 @@ void SoundwaveServer::handleClient(int client) {
         user = &(userItr->second);
         maplock.unlock();
     }
+    
+    int64_t songNameSize;
+    read(client, &songNameSize, sizeof(int64_t));
+    read(client, buffer, songNameSize);
+    string songName = buffer;
+    memset(buffer, 0, bufferSize);
+
+    ofstream fileStream;
+    uint8_t isValid = 1;
+    if (!user->createSong(fileStream, songName)) {
+        isValid = 0;
+        write(client, &isValid, sizeof(uint8_t));
+        close(client);
+        return;
+    }
+    write(client, &isValid, sizeof(uint8_t));
     //read in file size
     int64_t songSize;
-    int n = read(client, &songSize, sizeof(int64_t));
+    read(client, &songSize, sizeof(int64_t));
     int64_t remainingData = songSize;
     memset(buffer, 0, bufferSize);
 
-    //currently sound.mp3 for testing purposes
-    string filename = "sound.mp3";
-
-    ofstream fileStream;
-    fileStream.open(filename);
-    if (!fileStream) {  // NOTE: improve error handling
-        cout << "File opening failed" << endl;
-        exit(1);
-    }
+    int n;
     //read in song file
     while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
         fileStream.write(buffer, n);
