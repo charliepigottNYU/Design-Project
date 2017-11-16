@@ -20,7 +20,7 @@ fi
 
 mkdir -p ../../tmp
 
-cat ../../sql/templates/get_password.template | sed -e "s/<username>/$username/g"  > ../../tmp/get_password.sql
+cat ../../sql/templates/get_password.template | sed -e "s:<username>:$username:g"  > ../../tmp/get_password.sql
 
 PSWD=$(psql -U postgres -f ../../tmp/get_password.sql -d postgres -t -q -v "ON_ERROR_STOP=1")
 

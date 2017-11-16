@@ -22,7 +22,7 @@ fi
 
 mkdir -p ../../tmp
 
-cat ../../sql/templates/insert_song.template | sed -e "s/<username>/$username/g" -e "s@<song_path>@$song_path@g" > ../../tmp/insert_song.sql
+cat ../../sql/templates/insert_song.template | sed -e "s:<username>:$username:g" -e "s:<song_path>:$song_path:g" > ../../tmp/insert_song.sql
 
 psql -U postgres -f ../../tmp/insert_song.sql -d postgres -v "ON_ERROR_STOP=1"
 
