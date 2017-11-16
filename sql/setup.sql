@@ -13,6 +13,7 @@ CREATE TABLE user_info(
 CREATE TABLE song_info(
     song_path   TEXT    UNIQUE NOT NULL,
     username    TEXT           NOT NULL,
+    name        TEXT           NOT NULL,
     PRIMARY KEY (song_path, username),
     FOREIGN KEY (username) REFERENCES user_info (username)
 );
