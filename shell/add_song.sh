@@ -10,6 +10,7 @@ while getopts ":u:p:n:" opt; do
         p) song_path="$OPTARG";
         ;;
         n) song_name="$OPTARG";
+        ;;
         \?) echo $usage;  exit 1;
         ;;
     esac
