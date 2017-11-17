@@ -5,12 +5,13 @@
     </head>
     <body>
         <h1>Your Songs</h1>
-        {{range $song := .Songs}}
+        {{range $song := .}}
+        {{$song.Title}}
         <audio controls>
-            <source src={{$song.Title}} type="audio/mpeg">
-            <source src={{$song.Title}} type="audio/wav">
+            <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/mpeg">
+            <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/wav">
         </audio>
         <br>
         {{end}}
     </body>
-</html
+</html>
