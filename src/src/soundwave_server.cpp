@@ -1,50 +1,94 @@
 #include "soundwave_server.h"
 
+using namespace std;
 
-SoundwaveServer::SoundwaveServer(): bufferSize(1024) {
+SoundwaveServer* SoundwaveServer::instance = nullptr;
+
+SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
+    //create server file descriptor
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = htons(INADDR_ANY);
     saddr.sin_port = htons(5000);
+    //bind server fd to address information
     bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr));
 }
 
-void SoundwaveServer::run() {
-    listen(serverSocket, 10);
-    char buffer[bufferSize];
-    while(true) {
-        int client = accept(serverSocket, NULL, NULL);
-        int n;
-
-        n = read(client, buffer, bufferSize);
-        std::cout << buffer << std::endl;
-        int fileSize = atoi(buffer);
-        int remainingData = fileSize;
-        memset(buffer, 0, bufferSize);
-
-        std::cout << fileSize << std::endl;
-
-        //n = read(client, buffer, bufferSize);
-        //std::string filename(buffer);
-        //memset(buffer, 0, bufferSize);
-
-        std::string filename = "sound.wav";
-
-        std::ofstream fileStream;
-        fileStream.open(filename);
-        if (!fileStream) {  // NOTE: improve error handling
-            std::cout << "File opening failed" << std::endl;
-            std::exit(1);
-        }
-
-        while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
-            std::cout << buffer;  // NOTE: remove
-            fileStream.write(buffer, n);
-            remainingData -= n;
-            memset(buffer, 0, bufferSize);
-        }
-
-        fileStream.close();
+SoundwaveServer* SoundwaveServer::getInstance() {
+    if (instance == nullptr) {
+        instance = new SoundwaveServer();
     }
+    return instance;
+}
+
+void SoundwaveServer::run() {
+    //mark server socket for listening with a backlog of 10 tcp connections
+    listen(serverSocket, 10);
+    while(true) {  // change to threadpool to avoid spawning infinitely many threads
+        cout << "before accept" << endl;
+        int client = accept(serverSocket, NULL, NULL);
+        cout << "after accept" << endl;
+        thread runClient(&SoundwaveServer::handleClient, this, client);
+        runClient.detach();
+   }
+}
+
+
+void SoundwaveServer::handleClient(int client) {
+    cout << "enter";
+    char* buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    //read in username size
+    uint8_t userSize = 0;
+    read(client, &userSize, sizeof(uint8_t));
+    read(client, buffer, userSize);
+    string username = buffer;
+    memset(buffer, 0, bufferSize);
+
+    SoundwaveUser* user = nullptr;
+    maplock.lock();
+    auto userItr = users.find(username);
+    if (userItr == users.cend()) {
+        users.emplace(make_pair(username, SoundwaveUser(username)));
+        user = &users.at(username);
+        user->initUnlock(maplock);
+    } else {
+        user = &(userItr->second);
+        maplock.unlock();
+    }
+    
+    int64_t songNameSize;
+    read(client, &songNameSize, sizeof(int64_t));
+    read(client, buffer, songNameSize);
+    string songName = buffer;
+    memset(buffer, 0, bufferSize);
+
+    ofstream fileStream;
+    uint8_t isValid = 1;
+    if (!user->createSong(fileStream, songName)) {
+        isValid = 0;
+        write(client, &isValid, sizeof(uint8_t));
+        close(client);
+        return;
+    }
+    write(client, &isValid, sizeof(uint8_t));
+    //read in file size
+    int64_t songSize;
+    read(client, &songSize, sizeof(int64_t));
+    int64_t remainingData = songSize;
+    memset(buffer, 0, bufferSize);
+
+    int n;
+    //read in song file
+    while((n = read(client, buffer, bufferSize)) > 0 && (remainingData > 0)) {
+        fileStream.write(buffer, n);
+        remainingData -= n;
+        memset(buffer, 0, bufferSize);
+    }
+
+    delete[] buffer;
+    fileStream.close();
+    close(client);
+    cout << "Exit";
 }

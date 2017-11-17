@@ -1,28 +1,46 @@
 package main
 
 import (
-    "io"
-    "os/exec"
+    . "./rest_log"
+    "encoding/binary"
     "fmt"
+    "io"
+    "log"
+    "os/exec"
     "net"
     "net/http"
-    "strconv"
     "mime/multipart"
-    //"time"
+    "time"
 )
 
 const SESSION_COOKIE = "session"
 const BUFFER_SIZE = 1024
 
+var LOGGER map[int]*log.Logger
+
 func main() {
+    //rest API built using golangs http library
+    http.HandleFunc("/", welcome)
+    http.HandleFunc("/welcome", welcome)
+    http.HandleFunc("/home", home)
     http.HandleFunc("/signup", signup)
     http.HandleFunc("/login", login)
     http.HandleFunc("/file_upload",upload)
-
+    http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
 
+    LOGGER = InitLog("../../log/rest.log")
     http.ListenAndServe(":8080",nil)
+}
+
+//redirects to relevant http pages
+func welcome(w http.ResponseWriter, r *http.Request) {
+    http.ServeFile(w, r, "../../web/welcome.html")
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+    http.ServeFile(w, r, "../../web/home.html")
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
@@ -33,23 +51,32 @@ func login(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "../../web/login.html")
 }
 
+func play(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    if r.Method == http.MethodGet {
+        http.ServeFile(w, r, "../src/sound.mp3")
+    }
+}
+
+//gets song information from user and sends it to filesystem
 func upload(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
     if r.Method == http.MethodGet {
         http.ServeFile(w, r, "../../web/file_upload.html")
     } else if r.Method == http.MethodPost {
+        LOGGER[INFO].Println("new song upload")
         r.ParseForm()
         file, header, err := r.FormFile("song")
         defer file.Close()
         if err != nil {
-            fmt.Println("error opening file", err)
+            LOGGER[ERROR].Println("error opening file", err)
             return
         }
-        sendFile(file, header)
-        fmt.Println("send finish")
+        sendFile(w, r, file, header)
     }
 }
 
+//signup calls shell script to store info in databse, returns error if the username already exists
 func signupSubmit(w http.ResponseWriter, r *http.Request) {
    clearCache(w)
 
@@ -59,14 +86,17 @@ func signupSubmit(w http.ResponseWriter, r *http.Request) {
             args := []string{"../../shell/signup.sh", "-u", r.PostFormValue("username"),"-p", r.PostFormValue("password")}
             err := exec.Command("bash", args...).Run()
             if err != nil {
-                fmt.Println("error sending database info", err)
+                LOGGER[ERROR].Println("error sending database info", err)
                 return
             }
-            fmt.Println(r.PostFormValue("username")," signup")
+            LOGGER[INFO].Println(r.PostFormValue("username")," signup")
+            http.SetCookie(w, genCookie(r.PostFormValue("username")))
+            http.Redirect(w, r, "/home", http.StatusSeeOther)
         }
     }
 }
 
+//login submit functions similarly to signup with shell scripts as the means to interact with the database
 func loginSubmit(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
 
@@ -76,17 +106,18 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
         args := []string{"../../shell/login.sh", "-u", r.PostFormValue("username")}
         output, err := exec.Command("bash", args...).Output()
         if err != nil || len(output) == 0 {
-            fmt.Println("Incorrect username")
+            LOGGER[INFO].Println("Username does not exist", r.PostFormValue("username"))
             return
         }
 
         password := string(output[:len(output)-1])          //remove newline character from output
         if password != r.PostFormValue("password") {
-            fmt.Println(password, r.PostFormValue("password"))
-            fmt.Println("Incorrect password")
+            LOGGER[INFO].Println("Incorrect Password",
+                r.PostFormValue("username"), r.PostFormValue("password"))
             return
         }
-        fmt.Println("login complete")
+        http.SetCookie(w, genCookie(r.PostFormValue("username")))
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
     }
 }
 
@@ -96,16 +127,58 @@ func clearCache(w http.ResponseWriter) {
     w.Header().Set("Expires", "0")
 }
 
-func sendFile(file multipart.File, header *multipart.FileHeader){
-    fmt.Println(header.Filename, header.Size)
+//sends file information over tcp to the filesystem, connects on port 5000
+func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
+        header *multipart.FileHeader){
+
+    LOGGER[INFO].Println("New Song Upload:", header.Filename, header.Size)
     conn, err := net.Dial("tcp","127.0.0.1:5000")
-    defer conn.Close()
     if err != nil {
-        fmt.Println("error connecting to port 5000", err)
+        LOGGER[ERROR].Println("error connecting to port 5000", err)
         return
     }
-    fmt.Fprintf(conn, strconv.FormatInt(header.Size, 10))
-    fmt.Println(strconv.FormatInt(header.Size, 10))
+    defer conn.Close()
+    cookie, ok := getCookie(w, r)
+    if !ok {
+        LOGGER[INFO].Println("session cookie not found")
+        return
+    }
+    //send the size of the username over the network
+    var userSize uint8
+    userSize = uint8(len(cookie.Value))
+    err = binary.Write(conn, binary.LittleEndian, userSize)
+    if err != nil {
+        LOGGER[ERROR].Println("binary.Write failed:", err)
+        return
+    }
+
+    //send username
+    fmt.Fprintf(conn, cookie.Value)
+
+    //send length of file name over network then file name
+    var fileNameSize int64
+    fileNameSize = int64(len(header.Filename))
+    err = binary.Write(conn, binary.LittleEndian, fileNameSize)
+    if err != nil {
+        LOGGER[ERROR].Println("binary.Write failed:", err)
+        return
+    }
+
+    fmt.Fprintf(conn, header.Filename)
+
+    var result uint8 = 0
+    binary.Read(conn, binary.LittleEndian, &result)
+    if result == 0 {
+        LOGGER[WARNING].Println("Invalid song name:", header.Filename)
+        return
+    }
+
+    //send the size of the song file, then the size
+    err = binary.Write(conn, binary.LittleEndian, header.Size)
+    if err != nil {
+        LOGGER[ERROR].Println("binary.Write failed:", err)
+        return
+    }
     sendBuffer := make([]byte, BUFFER_SIZE)
     for {
         _, err = file.Read(sendBuffer)
@@ -116,21 +189,19 @@ func sendFile(file multipart.File, header *multipart.FileHeader){
     }
 }
 
-//cookie stuff to do later
-/*
-func getCookie(w http.ResponseWriter, r *http.Request) (bool, *http.Cookie){
+func getCookie(w http.ResponseWriter, r *http.Request) (*http.Cookie, bool){
     cookie, _ := r.Cookie(SESSION_COOKIE)
     if cookie == nil {
-        return false, nil
+        return nil, false
     }
-    return true, cookie
+    return cookie, true
 }
 
 func genCookie(id string) *http.Cookie {
     return &http.Cookie{
         Name: SESSION_COOKIE,
-        Value: id
-        Expires: time.Now().add(24 * time.Hour)
+        Value: id,
+        Expires: time.Now().Add(24 * time.Hour),
     }
 }
-*/
+

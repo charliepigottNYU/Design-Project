@@ -1,0 +1,6 @@
+INSERT INTO song_info (song_path, creator, name)
+VALUES ('<song_path>','<username>','<name>');
+
+INSERT INTO song_contributers (song_path, contributer)
+VALUES ('<song_path>','<username>');
+

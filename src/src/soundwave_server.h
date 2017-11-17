@@ -8,17 +8,35 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <map>
+#include <mutex>
+#include <utility>
+#include <string>
 
+#include "soundwave_filesystem.h"
+#include "soundwave_user.h"
+#include "soundwave_database.h"
 
 class SoundwaveServer {
-public:
+    static SoundwaveServer* instance;
+    //contsructor for soundwave server. Initialized serversocket, bufferSize and saddr
+    //to correct values for running a server over tcp.
     SoundwaveServer();
+    
+public:
+    static SoundwaveServer* getInstance();
     void run();
+    
+    void handleClient(int client);
 
 private:
+    std::map<std::string, SoundwaveUser> users;
+    std::mutex maplock;
     int serverSocket;
     int bufferSize;
     struct sockaddr_in saddr;
 };
+
 
 #endif

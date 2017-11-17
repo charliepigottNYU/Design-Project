@@ -22,7 +22,7 @@ fi
 
 mkdir -p ../../tmp
 
-cat ../../sql/templates/insert_user.template | sed -e "s/<username>/$username/g" -e "s/<password>/$password/g" > ../../tmp/insert_user.sql
+cat ../../sql/templates/insert_user.template | sed -e "s:<username>:$username:g" -e "s:<password>:$password:g" > ../../tmp/insert_user.sql
 
 psql -U postgres -f ../../tmp/insert_user.sql -d postgres -v "ON_ERROR_STOP=1"
 

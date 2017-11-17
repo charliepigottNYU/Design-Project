@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Your Songs</title>
+    </head>
+    <body>
+        <h1>Your Songs</h1>
+        {{range $song := .Songs}}
+        <audio controls>
+            <source src={{$song.Title}} type="audio/mpeg">
+            <source src={{$song.Title}} type="audio/wav">
+        </audio>
+        <br>
+        {{end}}
+    </body>
+</html
