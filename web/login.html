@@ -1,15 +1,53 @@
 <!doctype html>
-<html>
-    <head>
-        <title>Log In</title>
-    </head>
-    <body>
-        <form action="http://127.0.0.1:8080/login-submit" method="post">
-            Username:<br>
-            <input type="text" name="username"><br>
-            Password:<br>
-            <input type="password" name="password"><br>
-            <input type="submit">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Log In</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <form class="form-login" action="http://127.0.0.1:8080/login-submit" method="post">
+            <h1 class="form-login-heading">Log In</h1>
+            <input type="username" name="username" class="form-control" placeholder="Username" required>
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+            <br>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Log In</button>
         </form>
-    </body>
+    </div>
+</body>
+
+<style>
+body {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-login {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-login .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-login input[type="text"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-login input[type="password"] {
+  margin-bottom: -1px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+</style>
+
 </html>
