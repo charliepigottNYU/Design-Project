@@ -24,7 +24,7 @@ cat ../../sql/templates/get_contributer_songs.template | sed -e "s:<username>:$u
 
 SONGS=$(psql -U postgres -f ../../tmp/get_contributer_songs.sql -d postgres -t -q -v "ON_ERROR_STOP=1")
 
-psql_error_code = $?
+psql_error_code=$?
 
 rm ../../tmp/get_contributer_songs.sql
 
