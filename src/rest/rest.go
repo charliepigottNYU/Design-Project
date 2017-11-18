@@ -1,6 +1,7 @@
 package main
 
 import (
+    . "../../lib"
     . "./rest_log"
     "encoding/binary"
     "fmt"
@@ -180,6 +181,9 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
         LOGGER[INFO].Println("session cookie not found")
         return
     }
+
+    err = binary.Write(conn, binary.LittleEndian, CommandCreateSong)
+
     //send the size of the username over the network
     var userSize uint8
     userSize = uint8(len(cookie.Value))
