@@ -16,7 +16,7 @@ while getopts ":u:p:n:" opt; do
     esac
 done
 
-if [ -z $username ] || [ -z $song_path ] || [ -z $song_name ];
+if [ -z "$username" ] || [ -z "$song_path" ] || [ -z "$song_name" ];
 then
     echo $usage;
     exit 1

@@ -144,6 +144,7 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
     var songs []struct {Title, Path string}
     for _, i := range(result) {
         nameAndPath := strings.Split(i, ",")
+        fmt.Println(i)
         songs = append(songs, struct{Title, Path string}{nameAndPath[0], nameAndPath[1]})
     }
     t, err := template.ParseFiles("../../web/view_songs.html")
