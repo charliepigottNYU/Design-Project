@@ -82,6 +82,10 @@ void SoundwaveServer::CreateSong(int client) {
     ofstream fileStream;
     uint8_t isValid = 1;
     cout << "create call" << endl;
+    for (size_t i = 0; i < songName.size(); ++i) {
+        if (songName[i] == ' ')
+            songName[i] = '-';
+    }
     if (!user->createSong(fileStream, songName)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));
