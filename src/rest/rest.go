@@ -2,7 +2,6 @@ package main
 
 import (
     . "../../lib"
-    . "./rest_log"
     "encoding/binary"
     "fmt"
     "html/template"

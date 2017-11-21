@@ -14,6 +14,7 @@
 #include <utility>
 #include <string>
 
+#include "../../lib/log.h"
 #include "../../lib/status_codes.h"
 #include "soundwave_filesystem.h"
 #include "soundwave_user.h"

@@ -5,6 +5,8 @@
 #include <mutex>
 #include <string>
 #include <fstream>
+
+#include "../../lib/log.h"
 #include "soundwave_filesystem.h"
 
 class SoundwaveFilesystem;

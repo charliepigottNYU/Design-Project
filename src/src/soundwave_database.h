@@ -7,6 +7,8 @@
 #include <string>
 #include <iostream>
 
+#include "../../lib/log.h"
+
 class SoundwaveDatabase {
 public:
     static bool createSong(const std::string& user, const std::string& songName, const std::string& songPath);

@@ -5,6 +5,8 @@ using namespace std;
 SoundwaveServer* SoundwaveServer::instance = nullptr;
 
 SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
+    FILE* logFile = fopen("../../log/soundwave_server.log", "a");
+    Output2FILE::Stream() = logFile;
     //create server file descriptor
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&saddr, 0, sizeof(saddr));

@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 
+#include "../../lib/log.h"
 #include "soundwave_user.h"
 #include "soundwave_database.h"
 
