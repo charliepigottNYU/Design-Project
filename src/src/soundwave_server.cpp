@@ -9,10 +9,12 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = htons(INADDR_ANY);
+    saddr.sin_addr.s_addr = htonl(INADDR_ANY);
     saddr.sin_port = htons(5000);
     //bind server fd to address information
-    bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr));
+    if (::bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr)) != 0) {
+        cout << "bind error" << endl;
+    }
 }
 
 SoundwaveServer* SoundwaveServer::getInstance() {
@@ -24,9 +26,12 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
-    listen(serverSocket, 10);
+    if (listen(serverSocket, 10) != 0) {
+        cout << "listen error" << endl;
+    }
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
+        cout << "after accept" << endl;
         Command command;
         read(client, &command, sizeof(Command));
         switch (command) {
