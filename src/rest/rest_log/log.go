@@ -19,9 +19,9 @@ func InitLog(path string) map[int]*log.Logger {
     }
     logs := make(map[int]*log.Logger)
 
-    logs[INFO] = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+    logs[INFO] = log.New(file,    "INFO:    ", log.Ldate|log.Ltime|log.Lshortfile)
     logs[WARNING] = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-    logs[ERROR] = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+    logs[ERROR] = log.New(file,   "ERROR:   ", log.Ldate|log.Ltime|log.Lshortfile)
 
     return logs
 }

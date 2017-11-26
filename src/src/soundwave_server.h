@@ -14,6 +14,7 @@
 #include <utility>
 #include <string>
 
+#include "../../lib/status_codes.h"
 #include "soundwave_filesystem.h"
 #include "soundwave_user.h"
 #include "soundwave_database.h"
@@ -28,7 +29,7 @@ public:
     static SoundwaveServer* getInstance();
     void run();
     
-    void handleClient(int client);
+    void CreateSong(int client);
 
 private:
     std::map<std::string, SoundwaveUser> users;

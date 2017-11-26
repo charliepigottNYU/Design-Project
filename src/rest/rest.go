@@ -1,15 +1,18 @@
 package main
 
 import (
+    . "../../lib"
     . "./rest_log"
     "encoding/binary"
     "fmt"
+    "html/template"
     "io"
     "log"
     "os/exec"
     "net"
     "net/http"
     "mime/multipart"
+    "strings"
     "time"
 )
 
@@ -20,7 +23,7 @@ var LOGGER map[int]*log.Logger
 
 func main() {
     //rest API built using golangs http library
-    http.HandleFunc("/", welcome)
+    //http.HandleFunc("/", welcome)
     http.HandleFunc("/welcome", welcome)
     http.HandleFunc("/home", home)
     http.HandleFunc("/signup", signup)
@@ -29,6 +32,8 @@ func main() {
     http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
+    http.HandleFunc("/get_songs", getSongs)
+    http.Handle("/song/", http.StripPrefix("/song/", http.FileServer(http.Dir("../../data"))))
 
     LOGGER = InitLog("../../log/rest.log")
     http.ListenAndServe(":8080",nil)
@@ -121,6 +126,40 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func getSongs(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    cookie, ok := getCookie(w, r)
+    if !ok {
+        LOGGER[ERROR].Println("session cookie not found")
+        http.Redirect(w, r, "/", http.StatusSeeOther)
+    }
+    var result []string
+    args := []string{"../../shell/get_contributer_songs.sh", "-u", cookie.Value}
+    output, err := exec.Command("bash", args...).Output()
+    if err != nil || len(output) == 0 {
+        LOGGER[INFO].Println("User", cookie.Value, "has no contributions")
+    } else {
+        result = strings.Split(string(output[:len(output)-1]), " ")
+    }
+    var songs []struct {Title, Path string}
+    for _, i := range(result) {
+        nameAndPath := strings.Split(i, ",")
+        fmt.Println(i)
+        songs = append(songs, struct{Title, Path string}{nameAndPath[0], nameAndPath[1]})
+    }
+    t, err := template.ParseFiles("../../web/view_songs.html")
+    if err != nil {
+        LOGGER[ERROR].Println("HTML Template Error", err)
+        http.Redirect(w, r, "/", http.StatusSeeOther)
+        return
+    }
+    err = t.Execute(w, songs)
+    if err != nil {
+        LOGGER[ERROR].Println("Unable to execute template", err)
+        return
+    }
+}
+
 func clearCache(w http.ResponseWriter) {
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
@@ -143,6 +182,9 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
         LOGGER[INFO].Println("session cookie not found")
         return
     }
+
+    err = binary.Write(conn, binary.LittleEndian, CommandCreateSong)
+
     //send the size of the username over the network
     var userSize uint8
     userSize = uint8(len(cookie.Value))

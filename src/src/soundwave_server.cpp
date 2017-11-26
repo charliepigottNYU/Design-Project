@@ -9,10 +9,12 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = htons(INADDR_ANY);
+    saddr.sin_addr.s_addr = htonl(INADDR_ANY);
     saddr.sin_port = htons(5000);
     //bind server fd to address information
-    bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr));
+    if (::bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr)) != 0) {
+        cout << "bind error" << endl;
+    }
 }
 
 SoundwaveServer* SoundwaveServer::getInstance() {
@@ -24,18 +26,31 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
-    listen(serverSocket, 10);
+    if (listen(serverSocket, 10) != 0) {
+        cout << "listen error" << endl;
+    }
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
-        cout << "before accept" << endl;
         int client = accept(serverSocket, NULL, NULL);
         cout << "after accept" << endl;
-        thread runClient(&SoundwaveServer::handleClient, this, client);
-        runClient.detach();
+        Command command;
+        read(client, &command, sizeof(Command));
+        switch (command) {
+            case Command::CreateSong:{
+                thread runClient(&SoundwaveServer::CreateSong, this, client);
+                runClient.detach();
+                break;}
+            case Command::ModifySong:{
+                break;}
+            case Command::VoteSong:{
+                break;}
+            case Command::DeleteSong:{
+                break;}
+        }
    }
 }
 
 
-void SoundwaveServer::handleClient(int client) {
+void SoundwaveServer::CreateSong(int client) {
     cout << "enter";
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
@@ -66,6 +81,11 @@ void SoundwaveServer::handleClient(int client) {
 
     ofstream fileStream;
     uint8_t isValid = 1;
+    cout << "create call" << endl;
+    for (size_t i = 0; i < songName.size(); ++i) {
+        if (songName[i] == ' ')
+            songName[i] = '-';
+    }
     if (!user->createSong(fileStream, songName)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));

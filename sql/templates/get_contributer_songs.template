@@ -1,4 +1,4 @@
-SELECT name 
+SELECT name || ',' || song_info.song_path
   FROM song_contributers INNER JOIN song_info 
     ON song_contributers.song_path = song_info.song_path
  WHERE contributer='<username>';
