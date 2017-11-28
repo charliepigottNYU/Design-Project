@@ -32,6 +32,8 @@ func main() {
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
     http.HandleFunc("/get_songs", getSongs)
+    http.HandleFunc("/search", search)
+
     http.Handle("/song/", http.StripPrefix("/song/", http.FileServer(http.Dir("../../data"))))
 
     LOGGER = InitLog("../../log/rest.log")
@@ -156,6 +158,21 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         LOGGER[ERROR].Println("Unable to execute template", err)
         return
+    }
+}
+
+func search(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    if r.Method == http.MethodPost {
+        r.ParsePostForm()
+        var result []string
+        args := string[]{"../../shell/get_songs_by_name.sh", "-s" r.PostFormValue["song"]}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) == 0 {
+            LOGGER[INFO].Println("No songs found for search", r.PostFormValue["song"])
+        } else {
+            result = strings.Split(string(output[:len(output)-1], " ")
+        }
     }
 }
 
