@@ -4,14 +4,14 @@ export PGPASSWORD=CS4523
 usage="Usage: -s <song name>"
 while getopts ":s:" opt; do
     case $opt in
-        u) song="$OPTARG"
+        s) song="$OPTARG"
         ;;
         \?) echo $usage; exit 1;
         ;;
     esac
 done
 
-if [ -z $username ];
+if [ -z $song ];
 then
     echo $usage;
     exit 1

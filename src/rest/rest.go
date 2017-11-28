@@ -163,13 +163,13 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
 
 func search(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
-    if r.Method == http.MethodPost {
+    if r.Method == http.MethodGet {
         r.ParseForm()
         var result []string
-        args := []string{"../../shell/get_songs_by_name.sh", "-s", r.PostFormValue("song")}
+        args := []string{"../../shell/get_songs_by_name.sh", "-s", r.FormValue("song")}
         output, err := exec.Command("bash", args...).Output()
         if err != nil || len(output) == 0 {
-            LOGGER[INFO].Println("No songs found for search", r.PostFormValue("song"))
+            LOGGER[INFO].Println("No songs found for search", r.PostFormValue("song"), err)
         } else {
             result = strings.Split(string(output[:len(output)-1]), " ")
         }
