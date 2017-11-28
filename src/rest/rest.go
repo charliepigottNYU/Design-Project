@@ -164,14 +164,31 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
 func search(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
     if r.Method == http.MethodPost {
-        r.ParsePostForm()
+        r.ParseForm()
         var result []string
-        args := string[]{"../../shell/get_songs_by_name.sh", "-s" r.PostFormValue["song"]}
+        args := []string{"../../shell/get_songs_by_name.sh", "-s", r.PostFormValue("song")}
         output, err := exec.Command("bash", args...).Output()
         if err != nil || len(output) == 0 {
-            LOGGER[INFO].Println("No songs found for search", r.PostFormValue["song"])
+            LOGGER[INFO].Println("No songs found for search", r.PostFormValue("song"))
         } else {
-            result = strings.Split(string(output[:len(output)-1], " ")
+            result = strings.Split(string(output[:len(output)-1]), " ")
+        }
+        var songs []struct {Title, Creator string}
+        for _, i := range(result) {
+            titleAndCreator := strings.Split(i, ",")
+            fmt.Println(i)
+            songs = append(songs, struct{Title, Creator string}{titleAndCreator[0], titleAndCreator[1]})
+        }
+        t, err := template.ParseFiles("../../web/search.html")
+        if err != nil {
+            LOGGER[ERROR].Println("HTML Template Error", err)
+            http.Redirect(w, r, "/", http.StatusSeeOther)
+            return
+        }
+        err = t.Execute(w, songs)
+        if err != nil {
+            LOGGER[ERROR].Println("Unable to execute template", err)
+            return
         }
     }
 }
