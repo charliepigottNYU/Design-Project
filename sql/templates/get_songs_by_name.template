@@ -1,0 +1,3 @@
+SELECT name || ',' || creator
+  FROM song_info
+ WHERE name='<name>';
