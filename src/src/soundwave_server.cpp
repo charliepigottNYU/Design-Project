@@ -15,7 +15,7 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     saddr.sin_port = htons(5000);
     //bind server fd to address information
     if (::bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr)) != 0) {
-        cout << "bind error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:SoundwaverServer: " << "Bind error" << endl;
     }
 }
 
@@ -29,11 +29,13 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     if (listen(serverSocket, 10) != 0) {
-        cout << "listen error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:run: " << "Listen error" << endl;
     }
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
-        cout << "after accept" << endl;
+        if (client == -1) {
+            LOG(ERROR) << "sounwave_server.cpp:run: " << "Accept error" << endl;
+        }
         Command command;
         read(client, &command, sizeof(Command));
         switch (command) {
@@ -53,7 +55,6 @@ void SoundwaveServer::run() {
 
 
 void SoundwaveServer::CreateSong(int client) {
-    cout << "enter";
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
     //read in username size
@@ -82,7 +83,6 @@ void SoundwaveServer::CreateSong(int client) {
 
     ofstream fileStream;
     uint8_t isValid = 1;
-    cout << "create call" << endl;
     for (size_t i = 0; i < songName.size(); ++i) {
         if (songName[i] == ' ')
             songName[i] = '-';
@@ -111,5 +111,4 @@ void SoundwaveServer::CreateSong(int client) {
     delete[] buffer;
     fileStream.close();
     close(client);
-    cout << "Exit";
 }
