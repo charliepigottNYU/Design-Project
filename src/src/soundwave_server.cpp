@@ -69,11 +69,10 @@ void SoundwaveServer::CreateSong(int client) {
     if (userItr == users.cend()) {
         users.emplace(make_pair(username, SoundwaveUser(username)));
         user = &users.at(username);
-        user->initUnlock(maplock);
     } else {
         user = &(userItr->second);
-        maplock.unlock();
     }
+    maplock.unlock();
     
     int64_t songNameSize;
     read(client, &songNameSize, sizeof(int64_t));

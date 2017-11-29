@@ -18,13 +18,10 @@ public:
 
     SoundwaveUser(SoundwaveUser&& swUser);
 
-    void initUnlock(std::mutex& toUnlock);
-
     bool createSong(std::ofstream& ofs, const std::string& songName);
 
 private:
     std::string username;
-    std::vector<std::string> songs;
     SoundwaveFilesystem* sfs;
     std::mutex userlock;
 };
