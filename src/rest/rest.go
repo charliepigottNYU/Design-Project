@@ -22,7 +22,7 @@ var LOG map[int]*log.Logger
 
 func main() {
     //rest API built using golangs http library
-    //http.HandleFunc("/", welcomeRedirect)
+    http.HandleFunc("/", welcomeRedirect)
     http.HandleFunc("/welcome", welcome)
     http.HandleFunc("/home", home)
     http.HandleFunc("/signup", signup)
@@ -41,28 +41,57 @@ func main() {
 }
 
 //redirects to relevant http pages
-//func welcomeRedirect(w http.ResponseWriter, r *http.Request) {
-//    http.Redirect(w, r, "/welcome", http.StatusSeeOther)
-//}
+func welcomeRedirect(w http.ResponseWriter, r *http.Request) {
+    http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+}
 
 func welcome(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    _, ok := getCookie(r)
+    if ok {
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
     http.ServeFile(w, r, "../../web/welcome.html")
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    _, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
     http.ServeFile(w, r, "../../web/home.html")
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    _, ok := getCookie(r)
+    if ok {
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
     http.ServeFile(w, r, "../../web/signup.html")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    _, ok := getCookie(r)
+    if ok {
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
     http.ServeFile(w, r, "../../web/login.html")
 }
 
 func play(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
+    _, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
     if r.Method == http.MethodGet {
         http.ServeFile(w, r, "../src/sound.mp3")
     }
@@ -71,6 +100,11 @@ func play(w http.ResponseWriter, r *http.Request) {
 //gets song information from user and sends it to filesystem
 func upload(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
+    _, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
     if r.Method == http.MethodGet {
         http.ServeFile(w, r, "../../web/file_upload.html")
     } else if r.Method == http.MethodPost {
@@ -89,7 +123,11 @@ func upload(w http.ResponseWriter, r *http.Request) {
 //signup calls shell script to store info in databse, returns error if the username already exists
 func signupSubmit(w http.ResponseWriter, r *http.Request) {
    clearCache(w)
-
+   _, ok := getCookie(r)
+   if ok {
+       http.Redirect(w, r, "/home", http.StatusSeeOther)
+       return
+   }
    if r.Method == http.MethodPost {
         r.ParseForm()
         if r.PostFormValue("password") == r.PostFormValue("confirm") {
@@ -109,7 +147,11 @@ func signupSubmit(w http.ResponseWriter, r *http.Request) {
 //login submit functions similarly to signup with shell scripts as the means to interact with the database
 func loginSubmit(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
-
+    _, ok := getCookie(r)
+    if ok {
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+        return
+    }
     if r.Method == http.MethodPost {
         r.ParseForm()
 
@@ -133,10 +175,11 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
 
 func getSongs(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
-    cookie, ok := getCookie(w, r)
+    cookie, ok := getCookie(r)
     if !ok {
         LOG[ERROR].Println("session cookie not found")
-        http.Redirect(w, r, "/", http.StatusSeeOther)
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
     }
     var result []string
     args := []string{"../../shell/get_contributer_songs.sh", "-u", cookie.Value}
@@ -155,7 +198,7 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
     t, err := template.ParseFiles("../../web/view_songs.html")
     if err != nil {
         LOG[ERROR].Println("HTML Template Error", err)
-        http.Redirect(w, r, "/", http.StatusSeeOther)
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
         return
     }
     err = t.Execute(w, songs)
@@ -167,6 +210,11 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
 
 func search(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
+    _, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
     if r.Method == http.MethodGet {
         r.ParseForm()
         var result []string
@@ -214,7 +262,7 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
         return
     }
     defer conn.Close()
-    cookie, ok := getCookie(w, r)
+    cookie, ok := getCookie(r)
     if !ok {
         LOG[INFO].Println("session cookie not found")
         return
@@ -268,7 +316,7 @@ func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
     }
 }
 
-func getCookie(w http.ResponseWriter, r *http.Request) (*http.Cookie, bool){
+func getCookie(r *http.Request) (*http.Cookie, bool){
     cookie, _ := r.Cookie(SESSION_COOKIE)
     if cookie == nil {
         return nil, false
