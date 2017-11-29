@@ -11,7 +11,7 @@ while getopts ":s:" opt; do
     esac
 done
 
-if [ -z $song ];
+if [ -z "$song" ];
 then
     echo $usage;
     exit 1

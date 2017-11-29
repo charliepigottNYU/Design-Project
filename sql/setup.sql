@@ -14,7 +14,7 @@ CREATE TABLE song_info(
     song_path   TEXT    UNIQUE NOT NULL,
     creator     TEXT           NOT NULL,
     name        TEXT           NOT NULL,
-    PRIMARY KEY (song_path, creator),
+    PRIMARY KEY (song_path, creator, name),
     FOREIGN KEY (creator) REFERENCES user_info (username)
 );
 

@@ -1,0 +1,7 @@
+SELECT contributer
+  FROM song_contributers
+ WHERE song_path IN (
+       SELECT song_path
+         FROM song_info
+        WHERE creator='<creator>' AND name='<name>'
+ );
