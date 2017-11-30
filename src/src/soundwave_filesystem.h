@@ -34,7 +34,8 @@ public:
     */
     bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songName);
 
-    std::vector<std::string> getAllSongs(const std::string& user);
+    void createUserFolder(const std::string& user);
+
     //void deleteSong(std::string user, std::string songName);
     
     //void voteSong(std::string user, std::string songName);

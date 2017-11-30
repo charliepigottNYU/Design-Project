@@ -184,7 +184,7 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
     var result []string
     args := []string{"../../shell/get_contributer_songs.sh", "-u", cookie.Value}
     output, err := exec.Command("bash", args...).Output()
-    if err != nil || len(output) == 0 {
+    if err != nil || len(output) <= 1 {
         LOG[INFO].Println("User", cookie.Value, "has no contributions")
     } else {
         result = strings.Split(string(output[:len(output)-1]), " ")
@@ -220,7 +220,7 @@ func search(w http.ResponseWriter, r *http.Request) {
         var result []string
         args := []string{"../../shell/get_songs_by_name.sh", "-s", r.FormValue("song")}
         output, err := exec.Command("bash", args...).Output()
-        if err != nil || len(output) == 0 {
+        if err != nil || len(output) <= 1 {
             LOG[INFO].Println("No songs found for search", r.PostFormValue("song"), err)
         } else {
             result = strings.Split(string(output[:len(output)-1]), " ")

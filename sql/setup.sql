@@ -20,9 +20,10 @@ CREATE TABLE song_info(
 
 
 CREATE TABLE modification_info(
-    modification_path   TEXT PRIMARY KEY    NOT NULL,
+    modification_path   TEXT                NOT NULL,
     original_path       TEXT                NOT NULL,
     modifier            TEXT                NOT NULL,
+    PRIMARY KEY (modification_path, original_path, modifier),
     FOREIGN KEY(original_path) REFERENCES song_info(song_path)
 );
 

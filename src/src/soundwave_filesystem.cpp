@@ -22,7 +22,7 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
     }
     ofs.open("../../data/" + songPath);
     if (!ofs) {
-        LOG(ERROR) << "soundwave_filesystem.cpp:createSong: " << "Unable to open song path";
+        LOG(ERROR) << "soundwave_filesystem.cpp:createSong: " << "Unable to open song path" << "../../data/" + songPath << endl;
         return false;
     }
     size_t dotPos = songPath.rfind(".");
@@ -36,24 +36,10 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
     return true;
 }
 
-vector<string> SoundwaveFilesystem::getAllSongs(const string& user) {
+void SoundwaveFilesystem::createUserFolder(const string& user) {
     string path = "../../data/" + user;
-    vector<string> songs;
     DIR* directory;
     if ((directory = opendir(path.c_str())) == NULL) {
         mkdir(path.c_str(), 0777);
-        return songs;
     }
-    struct dirent* entry;
-    while ((entry = readdir(directory)) != NULL) {
-        struct stat st = {0};
-        string name = entry->d_name;
-        string songPath = path + "/" + name;
-        //skip unopenable files and directories
-        if (stat(songPath.c_str(), &st) == -1 || S_ISDIR(st.st_mode)) {
-            continue;
-        }
-        songs.push_back(name);
-    }
-    return songs;
 }
