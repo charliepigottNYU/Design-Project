@@ -17,22 +17,22 @@ bool SoundwaveFilesystem::createSong(ofstream& ofs, const string& user, const st
     string songPath = user + "/" + songName;
     bool created = SoundwaveDatabase::createSong(user, songName, songPath); // we should be generating the song path first? the database only stores song paths?
     if (!created) {
-        LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Song already exists" << endl;
+        LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Song already exists";
         return false;
     }
     ofs.open("../../data/" + songPath);
     if (!ofs) {
-        LOG(ERROR) << "soundwave_filesystem.cpp:createSong: " << "Unable to open song path" << endl;
+        LOG(ERROR) << "soundwave_filesystem.cpp:createSong: " << "Unable to open song path";
         return false;
     }
     size_t dotPos = songPath.rfind(".");
     string folder = "../../data/" + songPath.substr(0, dotPos);
-    LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Path: " << songPath << ", Folder: " << folder << endl;
+    LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Path: " << songPath << ", Folder: " << folder;
     struct stat st = {0};
     if (stat(folder.c_str(), &st) == -1) {
         mkdir(folder.c_str(), 0777);
     }
-    LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Song created" << endl;
+    LOG(INFO) << "soundwave_filesystem.cpp:createSong: " << "Song created";
     return true;
 }
 

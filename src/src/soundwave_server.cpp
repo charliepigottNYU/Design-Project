@@ -15,7 +15,7 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     saddr.sin_port = htons(5000);
     //bind server fd to address information
     if (::bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr)) != 0) {
-        LOG(ERROR) << "soundwave_server.cpp:SoundwaverServer: " << "Bind error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:SoundwaverServer: " << "Bind error";
     }
 }
 
@@ -29,12 +29,12 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     if (listen(serverSocket, 10) != 0) {
-        LOG(ERROR) << "soundwave_server.cpp:run: " << "Listen error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:run: " << "Listen error";
     }
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
         if (client == -1) {
-            LOG(ERROR) << "sounwave_server.cpp:run: " << "Accept error" << endl;
+            LOG(ERROR) << "sounwave_server.cpp:run: " << "Accept error";
         }
         Command command;
         read(client, &command, sizeof(Command));
