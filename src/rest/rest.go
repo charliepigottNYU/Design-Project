@@ -283,7 +283,12 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
             Creator string
             Contributers []string
             Modifications []struct{Title, Path, Votes string}
-        }{title, creator, contributers, modInfo})
+        }{
+            title,
+            creator,
+            contributers,
+            modInfo,
+        })
         if err != nil {
             LOG[ERROR].Println("Unable to execute template", err)
             return
