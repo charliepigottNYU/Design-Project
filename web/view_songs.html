@@ -7,6 +7,7 @@
         <h1>Your Songs</h1>
         {{range $song := .}}
         {{$song.Title}}
+        <br>
         <audio controls>
             <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/mpeg">
             <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/wav">
