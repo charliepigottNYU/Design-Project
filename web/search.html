@@ -7,6 +7,11 @@
         <h1>Search Result</h1>
         {{range $song := .}}
         {{$song.Title}}                {{$song.Creator}}
+        <form action="http://127.0.0.1:8080/song-page" method="post">
+            <input type="hidden" name="creator" value={{$song.Creator}}>
+            <input type="hidden" name="title" value={{$song.Title}}>
+            <input type="submit" value="View">
+        </form>
         <br>
         {{end}}
     </body>
