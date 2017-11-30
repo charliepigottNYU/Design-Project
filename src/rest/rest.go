@@ -289,10 +289,10 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
 
         t, err := template.ParseFiles("../../web/song_page.html")
         err = t.Execute(w, struct{
-            Title string
-            Creator string
-            Path string
-            Contributers []string
+            Title         string
+            Creator       string
+            Path          string
+            Contributers  []string
             Modifications []struct{Title, Path, Votes string}
         }{
             Title: title,

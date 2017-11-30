@@ -13,20 +13,20 @@
         <br>
         <br>
         <h2>Contributers</h2>
-        {{range .Contributers}}
-        {{.}}
+        {{range $contributer := .Contributers}}
+        {{$contributer}}
         <br>
         {{end}}
         <br>
         <br>
         <h2>Pending Modifications</h2>
-        {{range .Modifications}}
-        {{.Title}}
+        {{range $modification := .Modifications}}
+        {{$modification.Title}}
         <audio controls>
-            <source src=http://127.0.0.1:8080/song/{{.Path}} type="audio/mpeg">
-            <source src=http://127.0.0.1:8080/song/{{.Path}} type="audio/wav">
+            <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/mpeg">
+            <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/wav">
         </audio>
-        {{.Votes}}
+        {{$modification.Votes}}
         {{end}}
     </body>
 </html>
