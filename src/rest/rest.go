@@ -247,6 +247,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 }
 
 func populateSongPage(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
     if r.Method == http.MethodPost {
         r.ParseForm()
         creator := r.PostFormValue("creator")
@@ -277,17 +278,19 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
             modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
         }
 
-        t, err := template.ParseFiles("../../web/search.html")
+        t, err := template.ParseFiles("../../web/song_page.html")
         err = t.Execute(w, struct{
             Title string
             Creator string
+            Path string
             Contributers []string
             Modifications []struct{Title, Path, Votes string}
         }{
-            title,
-            creator,
-            contributers,
-            modInfo,
+            Title: title,
+            Creator: creator,
+            Path: /* Path goes here */
+            Contributers: contributers,
+            Modifications: modInfo,
         })
         if err != nil {
             LOG[ERROR].Println("Unable to execute template", err)
