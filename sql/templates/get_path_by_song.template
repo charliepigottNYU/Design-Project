@@ -1,0 +1,3 @@
+SELECT song_path
+  FROM song_info
+ WHERE creator='<creator>' and name='<name>'

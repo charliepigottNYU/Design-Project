@@ -253,9 +253,18 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
         creator := r.PostFormValue("creator")
         title := r.PostFormValue("title")
 
-        var contributers []string
-        args := []string{"../../shell/get_contributer_by_song.sh", "-s", title, "-u", creator}
+        var path string
+        args := []string{"../../shell/get_path_by_song.sh", "-s", title, "-u", creator}
         output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) <=1 {
+            LOG[WARNING].Println("No song path found to song:", title, "for creator", creator)
+        } else {
+            path = string(output[:len(output)-1])
+        }
+
+        var contributers []string
+        args = []string{"../../shell/get_contributer_by_song.sh", "-s", title, "-u", creator}
+        output, err = exec.Command("bash", args...).Output()
         if err != nil || len(output) <= 1 {
             LOG[WARNING].Println("No contributers to song:", title, "for creator", creator)
         } else {
@@ -288,7 +297,7 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
         }{
             Title: title,
             Creator: creator,
-            Path: /* Path goes here */
+            Path: path,
             Contributers: contributers,
             Modifications: modInfo,
         })
