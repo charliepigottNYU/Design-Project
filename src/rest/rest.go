@@ -278,8 +278,13 @@ func populateSongPage(w http.ResponseWriter, r *http.Request) {
         }
 
         t, err := template.ParseFiles("../../web/search.html")
-        err = t.Execute(w, struct{Title string, Creator string, Contributers []string, []struct{Title, Path, Votes string}}{title, creator, contributers, modInfo})
-        if {err != nil {
+        err = t.Execute(w, struct{
+            Title string
+            Creator string
+            Contributers []string
+            Modifications []struct{Title, Path, Votes string}
+        }{title, creator, contributers, modInfo})
+        if err != nil {
             LOG[ERROR].Println("Unable to execute template", err)
             return
         }
