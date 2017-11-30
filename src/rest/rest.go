@@ -33,6 +33,7 @@ func main() {
     http.HandleFunc("/login-submit", loginSubmit)
     http.HandleFunc("/get_songs", getSongs)
     http.HandleFunc("/search", search)
+    http.HandleFunc("/song-page", populateSongPage)
 
     http.Handle("/song/", http.StripPrefix("/song/", http.FileServer(http.Dir("../../data"))))
 
@@ -190,9 +191,9 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
         result = strings.Split(string(output[:len(output)-1]), " ")
     }
     var songs []struct {Title, Path string}
-    for _, i := range(result) {
-        nameAndPath := strings.Split(i, ",")
-        fmt.Println(i)
+    for _, elem := range(result) {
+        nameAndPath := strings.Split(elem, ",")
+        fmt.Println(elem)
         songs = append(songs, struct{Title, Path string}{nameAndPath[0], nameAndPath[1]})
     }
     t, err := template.ParseFiles("../../web/view_songs.html")
@@ -226,9 +227,9 @@ func search(w http.ResponseWriter, r *http.Request) {
             result = strings.Split(string(output[:len(output)-1]), " ")
         }
         var songs []struct {Title, Creator string}
-        for _, i := range(result) {
-            titleAndCreator := strings.Split(i, ",")
-            fmt.Println(i)
+        for _, elem := range(result) {
+            titleAndCreator := strings.Split(elem, ",")
+            fmt.Println(elem)
             songs = append(songs, struct{Title, Creator string}{titleAndCreator[0], titleAndCreator[1]})
         }
         t, err := template.ParseFiles("../../web/search.html")
@@ -239,6 +240,46 @@ func search(w http.ResponseWriter, r *http.Request) {
         }
         err = t.Execute(w, songs)
         if err != nil {
+            LOG[ERROR].Println("Unable to execute template", err)
+            return
+        }
+    }
+}
+
+func populateSongPage(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodPost {
+        r.ParseForm()
+        creator := r.PostFormValue("creator")
+        title := r.PostFormValue("title")
+
+        var contributers []string
+        args := []string{"../../shell/get_contributer_by_song.sh", "-s", title, "-u", creator}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[WARNING].Println("No contributers to song:", title, "for creator", creator)
+        } else {
+            contributers = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modifications []string
+        args = []string{"../../shell/get_modification_by_song.sh", "-s", title, "-u", creator}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[INFO].Println("No modifications for song:", title, "created by", creator)
+        } else {
+            modifications = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modInfo []struct{Title, Path, Votes string}
+        for _, elem := range(modifications) {
+            info := strings.Split(elem, ",")
+            fmt.Println(elem)
+            modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
+        }
+
+        t, err := template.ParseFiles("../../web/search.html")
+        err = t.Execute(w, struct{Title string, Creator string, Contributers []string, []struct{Title, Path, Votes string}}{title, creator, contributers, modInfo})
+        if {err != nil {
             LOG[ERROR].Println("Unable to execute template", err)
             return
         }
