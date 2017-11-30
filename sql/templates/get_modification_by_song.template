@@ -1,0 +1,7 @@
+SELECT modifier || "," || modification_path
+  FROM modification_info
+ WHERE original_path IN (
+       SELECT song_path
+         FROM song_info
+        WHERE creator='<creator>' AND name='<name>'
+ );
