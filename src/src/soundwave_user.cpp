@@ -2,7 +2,7 @@
 
 using namespace std;
 
-SoundwaveUser::SoundwaveUser(string& username): username(username) {
+SoundwaveUser::SoundwaveUser(const string& username): username(username) {
     sfs = SoundwaveFilesystem::getInstance();
     sfs->createUserFolder(username);
 }
@@ -14,5 +14,10 @@ bool SoundwaveUser::createSong(ofstream& ofs, const string& songName) {
     bool result = sfs->createSong(ofs, username, songName);
     userlock.unlock();
     return result;
+}
+
+bool SoundwaveUser::createModification(ofstream& ofs, const SoundwaveUser* modifier, const string& songName) {
+    //TODO
+    return true;
 }
 

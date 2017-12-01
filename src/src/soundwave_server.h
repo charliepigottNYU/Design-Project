@@ -30,8 +30,15 @@ public:
     static SoundwaveServer* getInstance();
     void run();
     
-    void CreateSong(int client);
+    void createSong(int client);
 
+    void createModification(int client);
+
+    SoundwaveUser* findUser(const std::string& username, bool create = false);
+
+    void loadSongFromNetwork(char* buffer, int client, std::ofstream& fileStream);
+
+    std::string readStringFromNetwork(char* buffer, int client);
 private:
     std::map<std::string, SoundwaveUser> users;
     std::mutex maplock;
