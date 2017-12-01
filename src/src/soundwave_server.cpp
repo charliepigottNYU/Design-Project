@@ -110,6 +110,7 @@ void SoundwaveServer::createModification(int client) {
         close(client);
         return;
     }
+    write(client, &isValid, sizeof(uint8_t));
 
     string songName = readStringFromNetwork(buffer, client);    
 
@@ -172,5 +173,6 @@ string SoundwaveServer::readStringFromNetwork(char* buffer, int client) {
     read(client, buffer, size);
     string result = buffer;
     memset(buffer, 0, bufferSize);
+    LOG(INFO) << "soundwave_server.cpp:readStringFromNetwork: " << "String read:" << result;
     return result;
 }
