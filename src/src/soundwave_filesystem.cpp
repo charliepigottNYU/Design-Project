@@ -43,3 +43,20 @@ void SoundwaveFilesystem::createUserFolder(const string& user) {
         mkdir(path.c_str(), 0777);
     }
 }
+
+bool SoundwaveFilesystem::createModification(ofstream& ofs, const string& user, const string& modifier, const string& songName) {
+    string songPath = user + "/" + songName;
+    size_t dotPos = songPath.rfind(".");
+    string modPath = songPath.substr(0, dotPos) + "/" + modifier;
+    bool created = SoundwaveDatabase::createModification(modifier, songPath, modPath);
+    if (!created) {
+        LOG(INFO) << "soundwave_filesystem.cpp:createModification: " << "Modification already exists";
+        return false;
+    }
+    ofs.open("../../data/" + modPath);
+    if (!ofs) {
+        LOG(ERROR) << "soundwave_filesystem.cpp:createModification: " << "Unable to open song path" << "../../data/" + modPath << endl;
+        return false;
+    }
+    return true;
+}

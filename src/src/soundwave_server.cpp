@@ -44,6 +44,8 @@ void SoundwaveServer::run() {
                 runClient.detach();
                 break;}
             case Command::ModifySong:{
+                thread runClient(&SoundwaveServer::createModification, this, client);
+                runClient.detach();
                 break;}
             case Command::VoteSong:{
                 break;}
