@@ -8,7 +8,7 @@ while getopts ":s:u:" opt; do
         ;;
         u) username="$OPTARG"
         ;;
-        \?) echo $usage; exit1;
+        \?) echo $usage; exit 1;
         ;;
     esac
 done
