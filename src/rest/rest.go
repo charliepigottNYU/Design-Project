@@ -13,6 +13,7 @@ import (
     "mime/multipart"
     "strings"
     "time"
+    "strconv"
 )
 
 const SESSION_COOKIE = "session"
@@ -35,6 +36,7 @@ func main() {
     http.HandleFunc("/search", search)
     http.HandleFunc("/song-page", populateSongPage)
     http.HandleFunc("/modification_upload", addModification)
+    http.HandleFunc("/vote_page", recordVote)
 
     http.Handle("/song/", http.StripPrefix("/song/", http.FileServer(http.Dir("../../data"))))
 
@@ -419,6 +421,26 @@ func addModification(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func recordVote(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodPost {
+        voteModifier := r.PostFormValue("vote")
+        modificationPath := r.PostFormValue("modification_path")
+
+        args := []string{"../../shell/modify_vote.sh", "-v", voteModifier, "-p", modificationPath}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) == 0 {
+            LOG[INFO].Println("Username does not exist", r.PostFormValue("username"))
+            return
+        }
+
+        votes, _ := strconv.Atoi(string(output[:len(output)-1]))          //remove newline character from output
+        if votes >= 5 {
+            // replace old song with new
+        }
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+    }
+}
+
 func clearCache(w http.ResponseWriter) {
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
@@ -429,23 +451,6 @@ func clearCache(w http.ResponseWriter) {
 func sendFile(file multipart.File, header *multipart.FileHeader, conn net.Conn) {
 
     LOG[INFO].Println("Song File sent:", header.Filename, header.Size)
-
-    ////send length of file name over network then file name
-    //var fileNameSize int64
-    //fileNameSize = int64(len(header.Filename))
-    //err := binary.Write(conn, binary.LittleEndian, fileNameSize)
-    //if err != nil {
-    //    LOG[ERROR].Println("binary.Write failed:", err)
-    //    return
-    //}
-
-    //fmt.Fprintf(conn, header.Filename)
-    //var result uint8 = 0
-    //binary.Read(conn, binary.LittleEndian, &result)
-    //if result == 0 {
-    //    LOG[WARNING].Println("Invalid song name:", header.Filename)
-    //    return
-    //}
 
     //send the size of the song file, then the size
     err := binary.Write(conn, binary.LittleEndian, header.Size)
