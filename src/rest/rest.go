@@ -28,7 +28,7 @@ func main() {
     http.HandleFunc("/home", home)
     http.HandleFunc("/signup", signup)
     http.HandleFunc("/login", login)
-    http.HandleFunc("logout", logout)
+    http.HandleFunc("/logout", logout)
     http.HandleFunc("/file_upload",upload)
     http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
