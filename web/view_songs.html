@@ -59,16 +59,16 @@
           </nav>
 
           <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3" id="content">
-            
-            <h1>Your Songs</h1>
-            {{range $song := .}}
-            {{$song.Title}}
-            <audio controls>
-              <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/mpeg">
-		<source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/wav">
-            </audio>
-            <br>
-            {{end}}
+        <h1>Your Songs</h1>
+        {{range $song := .}}
+        {{$song.Title}}
+        <br>
+        <audio controls>
+            <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/mpeg">
+            <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/wav">
+        </audio>
+        <br>
+        {{end}}
 	</div>
       </div>
       <style>

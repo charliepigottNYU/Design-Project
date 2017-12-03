@@ -1,15 +1,21 @@
 <!doctype html>
 <html>
     <head>
-        <title>{{.Title}}</title>
+        <title>{{.Title}} by {{.Creator}}</title>
     </head>
     <body>
-        <h1>{{.Title}}</h1>
+        <h1>{{.Title}} by {{.Creator}}</h1>
         <br>
         <audio controls>
             <source src=http://127.0.0.1:8080/song/{{.Path}} type="audio/mpeg">
             <source src=http://127.0.0.1:8080/song/{{.Path}} type="audio/wav">
         </audio>
+        <form action="http://127.0.0.1:8080/modification_upload" enctype="multipart/form-data" method="post">
+            <input type="file" name="modification" accept="audio/*">
+            <input type="hidden" name="creator" value={{.Creator}}>
+            <input type="hidden" name="title" value={{.Title}}>
+            <input type="submit" value="Ball Out!">
+        </form>
         <br>
         <br>
         <h2>Contributers</h2>
@@ -25,6 +31,15 @@
         <audio controls>
             <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/mpeg">
             <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/wav">
+            <form action="http://127.0.0.1:8080/vote_page" method="post">
+                <input type="hidden" name="vote", value=-1>
+                <input type="hidden", name="modification_path", value={{$modification.Path}}>
+                <input type="submit" value="<-">
+            </form>
+            <form action="http://127.0.0.1:8080/vote_page" method="post">
+                <input type="hidden" name="vote", value=1>
+                <input type="submit" value="->">
+            </form>
         </audio>
         {{$modification.Votes}}
         {{end}}

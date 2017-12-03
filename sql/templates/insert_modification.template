@@ -1,0 +1,2 @@
+INSERT INTO modification_info (modification_path, original_path, modifier)
+VALUES ('<mod_path>','<song_path>','<modifier>');

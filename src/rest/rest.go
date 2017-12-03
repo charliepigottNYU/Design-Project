@@ -13,6 +13,7 @@ import (
     "mime/multipart"
     "strings"
     "time"
+    "strconv"
 )
 
 const SESSION_COOKIE = "session"
@@ -33,6 +34,9 @@ func main() {
     http.HandleFunc("/login-submit", loginSubmit)
     http.HandleFunc("/get_songs", getSongs)
     http.HandleFunc("/search", search)
+    http.HandleFunc("/song-page", populateSongPage)
+    http.HandleFunc("/modification_upload", addModification)
+    http.HandleFunc("/vote_page", recordVote)
 
     http.Handle("/song/", http.StripPrefix("/song/", http.FileServer(http.Dir("../../data"))))
 
@@ -100,7 +104,7 @@ func play(w http.ResponseWriter, r *http.Request) {
 //gets song information from user and sends it to filesystem
 func upload(w http.ResponseWriter, r *http.Request) {
     clearCache(w)
-    _, ok := getCookie(r)
+    cookie, ok := getCookie(r)
     if !ok {
         http.Redirect(w, r, "/welcome", http.StatusSeeOther)
         return
@@ -116,7 +120,42 @@ func upload(w http.ResponseWriter, r *http.Request) {
             LOG[ERROR].Println("error opening file", err)
             return
         }
-        sendFile(w, r, file, header)
+
+        conn, err := net.Dial("tcp","127.0.0.1:5000")
+        if err != nil {
+            LOG[ERROR].Println("error connecting to port 5000", err)
+            return
+        }
+        defer conn.Close()
+
+        err = binary.Write(conn, binary.LittleEndian, CommandCreateSong)
+
+        userSize := uint8(len(cookie.Value))  // send size of username
+        err = binary.Write(conn, binary.LittleEndian, userSize)
+        if err != nil {
+            LOG[ERROR].Println("binary.Write failed:", err)
+            return
+        }
+        fmt.Fprintf(conn, cookie.Value)  // send username
+
+        fileNameSize := uint8(len(header.Filename))  // send size of song name
+        err = binary.Write(conn, binary.LittleEndian, fileNameSize)
+        if err != nil {
+            LOG[ERROR].Println("binary.Write failed:", err)
+            return
+        }
+        fmt.Fprintf(conn, header.Filename)  // send song name
+
+        fmt.Println("beforeread")
+        var isValid uint8
+        binary.Read(conn, binary.LittleEndian, &isValid)
+        fmt.Println("afterread")
+        if isValid != 1 {
+            LOG[ERROR].Println("Invalid Username:", cookie.Value)
+            return
+        }
+
+        sendFile(file, header, conn)
     }
 }
 
@@ -184,15 +223,15 @@ func getSongs(w http.ResponseWriter, r *http.Request) {
     var result []string
     args := []string{"../../shell/get_contributer_songs.sh", "-u", cookie.Value}
     output, err := exec.Command("bash", args...).Output()
-    if err != nil || len(output) == 0 {
+    if err != nil || len(output) <= 1 {
         LOG[INFO].Println("User", cookie.Value, "has no contributions")
     } else {
         result = strings.Split(string(output[:len(output)-1]), " ")
     }
     var songs []struct {Title, Path string}
-    for _, i := range(result) {
-        nameAndPath := strings.Split(i, ",")
-        fmt.Println(i)
+    for _, elem := range(result) {
+        nameAndPath := strings.Split(elem, ",")
+        fmt.Println(elem)
         songs = append(songs, struct{Title, Path string}{nameAndPath[0], nameAndPath[1]})
     }
     t, err := template.ParseFiles("../../web/view_songs.html")
@@ -220,15 +259,15 @@ func search(w http.ResponseWriter, r *http.Request) {
         var result []string
         args := []string{"../../shell/get_songs_by_name.sh", "-s", r.FormValue("song")}
         output, err := exec.Command("bash", args...).Output()
-        if err != nil || len(output) == 0 {
+        if err != nil || len(output) <= 1 {
             LOG[INFO].Println("No songs found for search", r.PostFormValue("song"), err)
         } else {
             result = strings.Split(string(output[:len(output)-1]), " ")
         }
         var songs []struct {Title, Creator string}
-        for _, i := range(result) {
-            titleAndCreator := strings.Split(i, ",")
-            fmt.Println(i)
+        for _, elem := range result {
+            titleAndCreator := strings.Split(elem, ",")
+            fmt.Println(elem)
             songs = append(songs, struct{Title, Creator string}{titleAndCreator[0], titleAndCreator[1]})
         }
         t, err := template.ParseFiles("../../web/search.html")
@@ -245,6 +284,163 @@ func search(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func populateSongPage(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    if r.Method == http.MethodPost {
+        r.ParseForm()
+        creator := r.PostFormValue("creator")
+        title := r.PostFormValue("title")
+
+        var path string
+        args := []string{"../../shell/get_path_by_song.sh", "-s", title, "-u", creator}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) <=1 {
+            LOG[WARNING].Println("No song path found to song:", title, "for creator", creator)
+        } else {
+            path = string(output[:len(output)-1])
+        }
+
+        var contributers []string
+        args = []string{"../../shell/get_contributer_by_song.sh", "-s", title, "-u", creator}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[WARNING].Println("No contributers to song:", title, "for creator", creator)
+        } else {
+            contributers = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modifications []string
+        args = []string{"../../shell/get_modification_by_song.sh", "-s", title, "-u", creator}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[INFO].Println("No modifications for song:", title, "created by", creator)
+        } else {
+            modifications = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modInfo []struct{Title, Path, Votes string}
+        for _, elem := range modifications {
+            info := strings.Split(elem, ",")
+            fmt.Println(elem)
+            modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
+        }
+
+        t, err := template.ParseFiles("../../web/song_page.html")
+        err = t.Execute(w, struct{
+            Title         string
+            Creator       string
+            Path          string
+            Contributers  []string
+            Modifications []struct{Title, Path, Votes string}
+        }{
+            Title:         title,
+            Creator:       creator,
+            Path:          path,
+            Contributers:  contributers,
+            Modifications: modInfo,
+        })
+        if err != nil {
+            LOG[ERROR].Println("Unable to execute template", err)
+            return
+        }
+    }
+}
+
+func addModification(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    cookie, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
+    if r.Method == http.MethodPost {
+        LOG[INFO].Println("new modification upload")
+        r.ParseForm()
+        file, header, err := r.FormFile("modification")
+        defer file.Close()
+        if err != nil {
+            LOG[ERROR].Println("error opening file", err)
+            return
+        }
+
+        conn, err := net.Dial("tcp","127.0.0.1:5000")
+        if err != nil {
+            LOG[ERROR].Println("error connecting to port 5000", err)
+            return
+        }
+        defer conn.Close()
+
+        //send the size of the creator over the network
+        var userSize uint8
+        userSize = uint8(len(r.PostFormValue("creator")))
+        err = binary.Write(conn, binary.LittleEndian, userSize)
+        if err != nil {
+            LOG[ERROR].Println("binary.Write failed:", err)
+            return
+        }
+        //send creator username
+        var isValid uint8
+        fmt.Fprintf(conn, r.PostFormValue("creator"))
+        binary.Read(conn, binary.LittleEndian, &isValid)
+        if isValid != 1 {
+            LOG[ERROR].Println("Invalid creator name:", )
+            return
+        }
+
+        //send the size of the modifier over the network
+        userSize = uint8(len(cookie.Value))
+        err = binary.Write(conn, binary.LittleEndian, userSize)
+        if err != nil {
+            LOG[ERROR].Println("binary.Write failed:", err)
+            return
+        }
+        //send modifier username
+        fmt.Fprintf(conn, cookie.Value)
+        binary.Read(conn, binary.LittleEndian, &isValid)
+        if isValid != 1 {
+            LOG[ERROR].Println("Invalid modifier name:", cookie.Value)
+            return
+        }
+
+        //send the size of the title over the network
+        songNameSize := uint8(len(r.PostFormValue("title")))
+        err = binary.Write(conn, binary.LittleEndian, songNameSize)
+        if err != nil {
+            LOG[ERROR].Println("binary.Write failed:", err)
+            return
+        }
+        //send title
+        fmt.Fprintf(conn, r.PostFormValue("title"))
+        binary.Read(conn, binary.LittleEndian, &isValid)
+        if isValid != 1 {
+            LOG[ERROR].Println("Invalid modifier name:", cookie.Value)
+            return
+        }
+
+        sendFile(file, header, conn)
+    }
+}
+
+func recordVote(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodPost {
+        voteModifier := r.PostFormValue("vote")
+        modificationPath := r.PostFormValue("modification_path")
+
+        args := []string{"../../shell/modify_vote.sh", "-v", voteModifier, "-p", modificationPath}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) == 0 {
+            LOG[INFO].Println("Username does not exist", r.PostFormValue("username"))
+            return
+        }
+
+        votes, _ := strconv.Atoi(string(output[:len(output)-1]))          //remove newline character from output
+        if votes >= 5 {
+            // replace old song with new
+        }
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
+    }
+}
+
 func clearCache(w http.ResponseWriter) {
     w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
     w.Header().Set("Pragma", "no-cache")
@@ -252,56 +448,12 @@ func clearCache(w http.ResponseWriter) {
 }
 
 //sends file information over tcp to the filesystem, connects on port 5000
-func sendFile(w http.ResponseWriter, r *http.Request, file multipart.File,
-        header *multipart.FileHeader){
+func sendFile(file multipart.File, header *multipart.FileHeader, conn net.Conn) {
 
-    LOG[INFO].Println("New Song Upload:", header.Filename, header.Size)
-    conn, err := net.Dial("tcp","127.0.0.1:5000")
-    if err != nil {
-        LOG[ERROR].Println("error connecting to port 5000", err)
-        return
-    }
-    defer conn.Close()
-    cookie, ok := getCookie(r)
-    if !ok {
-        LOG[INFO].Println("session cookie not found")
-        return
-    }
-
-    err = binary.Write(conn, binary.LittleEndian, CommandCreateSong)
-
-    //send the size of the username over the network
-    var userSize uint8
-    userSize = uint8(len(cookie.Value))
-    err = binary.Write(conn, binary.LittleEndian, userSize)
-    if err != nil {
-        LOG[ERROR].Println("binary.Write failed:", err)
-        return
-    }
-
-    //send username
-    fmt.Fprintf(conn, cookie.Value)
-
-    //send length of file name over network then file name
-    var fileNameSize int64
-    fileNameSize = int64(len(header.Filename))
-    err = binary.Write(conn, binary.LittleEndian, fileNameSize)
-    if err != nil {
-        LOG[ERROR].Println("binary.Write failed:", err)
-        return
-    }
-
-    fmt.Fprintf(conn, header.Filename)
-
-    var result uint8 = 0
-    binary.Read(conn, binary.LittleEndian, &result)
-    if result == 0 {
-        LOG[WARNING].Println("Invalid song name:", header.Filename)
-        return
-    }
+    LOG[INFO].Println("Song File sent:", header.Filename, header.Size)
 
     //send the size of the song file, then the size
-    err = binary.Write(conn, binary.LittleEndian, header.Size)
+    err := binary.Write(conn, binary.LittleEndian, header.Size)
     if err != nil {
         LOG[ERROR].Println("binary.Write failed:", err)
         return

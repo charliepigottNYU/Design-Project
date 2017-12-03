@@ -1,0 +1,7 @@
+UPDATE modification_info
+   SET votes = votes + <vote_value>
+ WHERE modification_path = '<modification_path>';
+
+SELECT votes
+  FROM modification_info
+ WHERE modification_path = '<modification_path>';

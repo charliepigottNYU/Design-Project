@@ -15,7 +15,7 @@ SoundwaveServer::SoundwaveServer(): bufferSize(1024), users() {
     saddr.sin_port = htons(5000);
     //bind server fd to address information
     if (::bind(serverSocket, (struct sockaddr*) &saddr, sizeof(saddr)) != 0) {
-        LOG(ERROR) << "soundwave_server.cpp:SoundwaverServer: " << "Bind error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:SoundwaverServer: " << "Bind error";
     }
 }
 
@@ -29,21 +29,23 @@ SoundwaveServer* SoundwaveServer::getInstance() {
 void SoundwaveServer::run() {
     //mark server socket for listening with a backlog of 10 tcp connections
     if (listen(serverSocket, 10) != 0) {
-        LOG(ERROR) << "soundwave_server.cpp:run: " << "Listen error" << endl;
+        LOG(ERROR) << "soundwave_server.cpp:run: " << "Listen error";
     }
     while(true) {  // change to threadpool to avoid spawning infinitely many threads
         int client = accept(serverSocket, NULL, NULL);
         if (client == -1) {
-            LOG(ERROR) << "sounwave_server.cpp:run: " << "Accept error" << endl;
+            LOG(ERROR) << "sounwave_server.cpp:run: " << "Accept error";
         }
         Command command;
         read(client, &command, sizeof(Command));
         switch (command) {
             case Command::CreateSong:{
-                thread runClient(&SoundwaveServer::CreateSong, this, client);
+                thread runClient(&SoundwaveServer::createSong, this, client);
                 runClient.detach();
                 break;}
             case Command::ModifySong:{
+                thread runClient(&SoundwaveServer::createModification, this, client);
+                runClient.detach();
                 break;}
             case Command::VoteSong:{
                 break;}
@@ -54,32 +56,15 @@ void SoundwaveServer::run() {
 }
 
 
-void SoundwaveServer::CreateSong(int client) {
+void SoundwaveServer::createSong(int client) {
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
-    //read in username size
-    uint8_t userSize = 0;
-    read(client, &userSize, sizeof(uint8_t));
-    read(client, buffer, userSize);
-    string username = buffer;
-    memset(buffer, 0, bufferSize);
-
-    SoundwaveUser* user = nullptr;
-    maplock.lock();
-    auto userItr = users.find(username);
-    if (userItr == users.cend()) {
-        users.emplace(make_pair(username, SoundwaveUser(username)));
-        user = &users.at(username);
-    } else {
-        user = &(userItr->second);
-    }
-    maplock.unlock();
     
-    int64_t songNameSize;
-    read(client, &songNameSize, sizeof(int64_t));
-    read(client, buffer, songNameSize);
-    string songName = buffer;
-    memset(buffer, 0, bufferSize);
+    string username = readStringFromNetwork(buffer, client);
+
+    SoundwaveUser* user = findUser(username, true);
+    
+    string songName = readStringFromNetwork(buffer, client);
 
     ofstream fileStream;
     uint8_t isValid = 1;
@@ -94,7 +79,81 @@ void SoundwaveServer::CreateSong(int client) {
         return;
     }
     write(client, &isValid, sizeof(uint8_t));
-    //read in file size
+
+    loadSongFromNetwork(buffer, client, fileStream);
+
+    delete[] buffer;
+    fileStream.close();
+    close(client);
+}
+
+void SoundwaveServer::createModification(int client) {
+    char* buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    
+    string username = readStringFromNetwork(buffer, client);
+    
+    SoundwaveUser* user = findUser(username);
+    uint8_t isValid = 1;
+    if (user == nullptr) {
+        isValid = 0;
+        write(client, &isValid, sizeof(uint8_t));
+        close(client);
+        return;
+    }
+    write(client, &isValid, sizeof(uint8_t));
+
+    username = readStringFromNetwork(buffer, client);
+
+    SoundwaveUser* modifier = findUser(username);
+    if (modifier == nullptr) {
+        isValid = 0;
+        write(client, &isValid, sizeof(uint8_t));
+        close(client);
+        return;
+    }
+    write(client, &isValid, sizeof(uint8_t));
+
+    string songName = readStringFromNetwork(buffer, client);    
+
+    ofstream fileStream;
+    for (size_t i = 0; i < songName.size(); ++i) {
+        if (songName[i] == ' ')
+            songName[i] = '-';
+    }
+
+    if (!user->createModification(fileStream, modifier, songName)) {
+        isValid = 0;
+        write(client, &isValid, sizeof(uint8_t));
+        close(client);
+        return;
+    }
+
+    write(client, &isValid, sizeof(uint8_t));
+    loadSongFromNetwork(buffer, client, fileStream);
+
+    delete[] buffer;
+    fileStream.close();
+    close(client);
+}
+
+SoundwaveUser* SoundwaveServer::findUser(const string& username, bool create) {
+    SoundwaveUser* user = nullptr;
+    maplock.lock();
+    auto userItr = users.find(username);
+    if (userItr != users.cend()) {
+        user = &(userItr->second);
+    }
+    else if (create) {
+        users.emplace(make_pair(username, SoundwaveUser(username)));
+        user = &users.at(username);
+    }
+    maplock.unlock();
+    return user;
+}
+
+void SoundwaveServer::loadSongFromNetwork(char* buffer, int client, ofstream& fileStream) {
+//read in file size
     int64_t songSize;
     read(client, &songSize, sizeof(int64_t));
     int64_t remainingData = songSize;
@@ -107,8 +166,15 @@ void SoundwaveServer::CreateSong(int client) {
         remainingData -= n;
         memset(buffer, 0, bufferSize);
     }
+}
 
-    delete[] buffer;
-    fileStream.close();
-    close(client);
+string SoundwaveServer::readStringFromNetwork(char* buffer, int client) {
+    //read in string size
+    uint8_t size = 0;
+    read(client, &size, sizeof(uint8_t));
+    read(client, buffer, size);
+    string result = buffer;
+    memset(buffer, 0, bufferSize);
+    LOG(INFO) << "soundwave_server.cpp:readStringFromNetwork: " << "String read:" << result;
+    return result;
 }

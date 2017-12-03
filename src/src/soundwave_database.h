@@ -12,6 +12,8 @@
 class SoundwaveDatabase {
 public:
     static bool createSong(const std::string& user, const std::string& songName, const std::string& songPath);
+    
+    static bool createModification(const std::string& user, const std::string& songPath, const std::string& modPath);
     //static bool deleteSong(std::string user, std::string songPath);
 
 };

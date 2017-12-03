@@ -14,11 +14,13 @@ class SoundwaveFilesystem;
 class SoundwaveUser {
 public:
 
-    SoundwaveUser(std::string& username);
+    SoundwaveUser(const std::string& username);
 
     SoundwaveUser(SoundwaveUser&& swUser);
 
     bool createSong(std::ofstream& ofs, const std::string& songName);
+
+    bool createModification(std::ofstream& ofs, const SoundwaveUser* modifier, const std::string& songName);
 
 private:
     std::string username;
