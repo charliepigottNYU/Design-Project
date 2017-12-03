@@ -28,6 +28,7 @@ func main() {
     http.HandleFunc("/home", home)
     http.HandleFunc("/signup", signup)
     http.HandleFunc("/login", login)
+    http.HandleFunc("logout", logout)
     http.HandleFunc("/file_upload",upload)
     http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
@@ -87,6 +88,15 @@ func login(w http.ResponseWriter, r *http.Request) {
         return
     }
     http.ServeFile(w, r, "../../web/login.html")
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    cookie, _ := r.Cookie(SESSION_COOKIE)
+    cookie.MaxAge = -1
+    cookie.Expires = time.Now().Add(-1 * time.Hour)
+    http.SetCookie(w, cookie)
+    http.Redirect(w, r, "/welcome", http.StatusSeeOther)
 }
 
 func play(w http.ResponseWriter, r *http.Request) {
