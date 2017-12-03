@@ -1,4 +1,4 @@
-SELECT modifier || "," || modification_path || "," || votes
+SELECT modifier || ',' || modification_path || ',' || votes
   FROM modification_info
  WHERE original_path IN (
        SELECT song_path

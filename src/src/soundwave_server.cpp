@@ -98,7 +98,7 @@ void SoundwaveServer::createModification(int client) {
     
     string username = readStringFromNetwork(buffer, client); // read size/creator from connection
     
-    SoundwaveUser* user = findUser(username);
+    SoundwaveUser* user = findUser(username, true);
     uint8_t isValid = 1;
     if (user == nullptr) {
         LOG(WARNING) << "soundwave_server.cpp:createModification: " << "Song Creator not found";
@@ -111,7 +111,7 @@ void SoundwaveServer::createModification(int client) {
 
     username = readStringFromNetwork(buffer, client);  // read size/modifier from connection
 
-    SoundwaveUser* modifier = findUser(username);
+    SoundwaveUser* modifier = findUser(username, true);
     if (modifier == nullptr) {
         LOG(WARNING) << "soundwave_server.cpp:createModification: " << "Song Modifier not found";
         isValid = 0;

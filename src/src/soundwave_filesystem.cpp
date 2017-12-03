@@ -47,7 +47,7 @@ void SoundwaveFilesystem::createUserFolder(const string& user) {
 bool SoundwaveFilesystem::createModification(ofstream& ofs, const string& user, const string& modifier, const string& songName) {
     string songPath = user + "/" + songName;
     size_t dotPos = songPath.rfind(".");
-    string modPath = songPath.substr(0, dotPos) + "/" + modifier;
+    string modPath = songPath.substr(0, dotPos) + "/" + modifier + songPath.substr(dotPos);
     bool created = SoundwaveDatabase::createModification(modifier, songPath, modPath);
     if (!created) {
         LOG(INFO) << "soundwave_filesystem.cpp:createModification: " << "Modification already exists";

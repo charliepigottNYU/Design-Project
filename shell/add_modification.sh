@@ -26,7 +26,7 @@ mkdir -p ../../tmp
 
 cat ../../sql/templates/insert_modification.template | sed -e "s:<modifier>:$username:g" -e "s:<song_path>:$song_path:g" -e "s:<mod_path>:$mod_path:g" > ../../tmp/insert_modification.sql
 
-psql -U postgres -f ../../tmp/insert_song.sql -d postgres -v "ON_ERROR_STOP=1"
+psql -U postgres -f ../../tmp/insert_modification.sql -d postgres -v "ON_ERROR_STOP=1"
 
 psql_error_code=$?
 
