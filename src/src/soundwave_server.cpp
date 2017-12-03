@@ -41,20 +41,20 @@ void SoundwaveServer::run() {
         LOG(INFO) << "soundwave_server.cpp:run: " << "Executing command " << unsigned(command);
         switch (command) {
             case Command::CreateSong:{
-                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::CreateSong";
+                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::CreateSong";
                 thread runClient(&SoundwaveServer::createSong, this, client);
                 runClient.detach();
                 break;}
             case Command::ModifySong:{
-                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::ModifySong";
+                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::ModifySong";
                 thread runClient(&SoundwaveServer::createModification, this, client);
                 runClient.detach();
                 break;}
             case Command::VoteSong:{
-                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::VoteSong";
+                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::VoteSong";
                 break;}
             case Command::DeleteSong:{
-                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::DeleteSong";
+                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::DeleteSong";
                 break;}
         }
    }
@@ -128,7 +128,6 @@ void SoundwaveServer::createModification(int client) {
         if (songName[i] == ' ')
             songName[i] = '-';
     }
-    LOG(DEBUG) << "before user create modification call";
     if (!user->createModification(fileStream, modifier, songName)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));
@@ -136,10 +135,8 @@ void SoundwaveServer::createModification(int client) {
         return;
     }
     write(client, &isValid, sizeof(uint8_t));
-    LOG(DEBUG) << "after user create modification call (before load song)";
 
     loadSongFromNetwork(buffer, client, fileStream);
-    LOG(DEBUG) << "after load song from network call";
 
     delete[] buffer;
     fileStream.close();
