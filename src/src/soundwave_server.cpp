@@ -38,18 +38,23 @@ void SoundwaveServer::run() {
         }
         Command command;
         read(client, &command, sizeof(Command));
+        LOG(INFO) << "soundwave_server.cpp:run: " << "Executing command " << unsigned(command);
         switch (command) {
             case Command::CreateSong:{
+                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::CreateSong";
                 thread runClient(&SoundwaveServer::createSong, this, client);
                 runClient.detach();
                 break;}
             case Command::ModifySong:{
+                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::ModifySong";
                 thread runClient(&SoundwaveServer::createModification, this, client);
                 runClient.detach();
                 break;}
             case Command::VoteSong:{
+                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::VoteSong";
                 break;}
             case Command::DeleteSong:{
+                LOG(DEBUG) << "soundwave_server.cpp:run: " << "Command::DeleteSong";
                 break;}
         }
    }
@@ -91,46 +96,50 @@ void SoundwaveServer::createModification(int client) {
     char* buffer = new char[bufferSize];
     memset(buffer, 0, bufferSize);
     
-    string username = readStringFromNetwork(buffer, client);
+    string username = readStringFromNetwork(buffer, client); // read size/creator from connection
     
     SoundwaveUser* user = findUser(username);
     uint8_t isValid = 1;
     if (user == nullptr) {
+        LOG(WARNING) << "soundwave_server.cpp:createModification: " << "Song Creator not found";
         isValid = 0;
-        write(client, &isValid, sizeof(uint8_t));
+        write(client, &isValid, sizeof(uint8_t));  // write failed response
         close(client);
         return;
     }
-    write(client, &isValid, sizeof(uint8_t));
+    write(client, &isValid, sizeof(uint8_t));  // write successful response
 
-    username = readStringFromNetwork(buffer, client);
+    username = readStringFromNetwork(buffer, client);  // read size/modifier from connection
 
     SoundwaveUser* modifier = findUser(username);
     if (modifier == nullptr) {
+        LOG(WARNING) << "soundwave_server.cpp:createModification: " << "Song Modifier not found";
         isValid = 0;
-        write(client, &isValid, sizeof(uint8_t));
+        write(client, &isValid, sizeof(uint8_t));  // write failed response
         close(client);
         return;
     }
-    write(client, &isValid, sizeof(uint8_t));
+    write(client, &isValid, sizeof(uint8_t));  // write successful response
 
-    string songName = readStringFromNetwork(buffer, client);    
+    string songName = readStringFromNetwork(buffer, client);  // read size/songname from connection
 
     ofstream fileStream;
     for (size_t i = 0; i < songName.size(); ++i) {
         if (songName[i] == ' ')
             songName[i] = '-';
     }
-
+    LOG(DEBUG) << "before user create modification call";
     if (!user->createModification(fileStream, modifier, songName)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));
         close(client);
         return;
     }
-
     write(client, &isValid, sizeof(uint8_t));
+    LOG(DEBUG) << "after user create modification call (before load song)";
+
     loadSongFromNetwork(buffer, client, fileStream);
+    LOG(DEBUG) << "after load song from network call";
 
     delete[] buffer;
     fileStream.close();
@@ -158,6 +167,7 @@ void SoundwaveServer::loadSongFromNetwork(char* buffer, int client, ofstream& fi
     read(client, &songSize, sizeof(int64_t));
     int64_t remainingData = songSize;
     memset(buffer, 0, bufferSize);
+    LOG(INFO) << "soundwave_server.cpp:loadSongFromNetwork: " << "attempting to read song of size " << songSize << " over connection " << client;
 
     int n;
     //read in song file
@@ -175,6 +185,6 @@ string SoundwaveServer::readStringFromNetwork(char* buffer, int client) {
     read(client, buffer, size);
     string result = buffer;
     memset(buffer, 0, bufferSize);
-    LOG(INFO) << "soundwave_server.cpp:readStringFromNetwork: " << "String read:" << result;
+    LOG(INFO) << "soundwave_server.cpp:readStringFromNetwork: " << "String read: " << result;
     return result;
 }

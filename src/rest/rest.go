@@ -370,6 +370,8 @@ func addModification(w http.ResponseWriter, r *http.Request) {
         }
         defer conn.Close()
 
+        err = binary.Write(conn, binary.LittleEndian, CommandModifySong)
+
         //send the size of the creator over the network
         var userSize uint8
         userSize = uint8(len(r.PostFormValue("creator")))
