@@ -27,7 +27,7 @@ PATH=$(psql -U postgres -f ../../tmp/get_path_by_song.sql -d postgres -t -q -v "
 
 psql_error_code=$?
 
-rm ../../tmp/get_contributer_by_song.sql
+rm ../../tmp/get_path_by_song.sql
 
 if [ $psql_error_code -ne 0 ];
 then
