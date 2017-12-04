@@ -1,0 +1,6 @@
+DELETE FROM song_contributers
+      WHERE song_path='<song>'
+DELETE FROM modification_info
+      WHERE original_path='<song>'
+DELETE FROM song_info
+      WHERE song_path='<song>'
