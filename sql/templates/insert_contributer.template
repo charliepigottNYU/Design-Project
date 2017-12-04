@@ -3,3 +3,5 @@ INSERT INTO song_contributers(song_path, contributer)
 
 DELETE FROM modification_info 
       WHERE original_path='<song>';
+
+UPDATE song_info SET song_path='<contributer>'||'<song>' WHERE song_path='<song>' 

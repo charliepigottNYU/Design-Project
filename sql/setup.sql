@@ -25,13 +25,13 @@ CREATE TABLE modification_info(
     modifier            TEXT                NOT NULL,
     votes               INT                 DEFAULT 0,
     PRIMARY KEY (modification_path, original_path, modifier),
-    FOREIGN KEY(original_path) REFERENCES song_info(song_path)
+    FOREIGN KEY(original_path) REFERENCES song_info(song_path) ON UPDATE CASCADE
 );
 
 CREATE TABLE song_contributers(
     song_path       TEXT    NOT NULL,
     contributer     TEXT    NOT NULL,
     PRIMARY KEY(song_path, contributer),
-    FOREIGN KEY(song_path)   REFERENCES song_info(song_path),
-    FOREIGN KEY(contributer) REFERENCES user_info(username)
+    FOREIGN KEY(song_path)   REFERENCES song_info(song_path) ON UPDATE CASCADE,
+    FOREIGN KEY(contributer) REFERENCES user_info(username) ON UPDATE CASCADE
 );

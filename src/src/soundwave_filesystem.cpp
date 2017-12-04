@@ -70,9 +70,12 @@ void SoundwaveFilesystem::updateSong(const string& user, const string& modifier,
     size_t dotPos = songPath.rfind(".");
     string modPath = "../../data/" + songPath.substr(0, dotPos) + "/" + modifier + songPath.substr(dotPos);
     songPath = "../../data/" + songPath;
+    string command = "rm " + songPath;
+    system(command.c_str());
+    songPath = modifier+songPath;
     rename(modPath.c_str(), songPath.c_str());
     dotPos = songPath.rfind(".");
     string folder = songPath.substr(0, dotPos);
-    string command = "rm  " + folder+"/*";
+    command = "rm  " + folder+"/*";
     system(command.c_str());
 }

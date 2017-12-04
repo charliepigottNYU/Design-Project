@@ -602,19 +602,10 @@ var etagHeaders = []string{
 }
 
 func NoCache(h http.Handler) http.Handler {
+    fmt.Println("hellooooooooo")
     fn := func(w http.ResponseWriter, r *http.Request) {
-        // Delete any ETag headers that may have been set
-        for _, v := range etagHeaders {
-            if r.Header.Get(v) != "" {
-                r.Header.Del(v)
-            }
-        }
-
-        // Set our NoCache headers
-        for k, v := range noCacheHeaders {
-            w.Header().Set(k, v)
-        }
-
+        fmt.Println("request file")
+        clearCache(w)
         h.ServeHTTP(w, r)
     }
 
