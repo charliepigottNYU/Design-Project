@@ -61,21 +61,23 @@ bool SoundwaveFilesystem::createModification(ofstream& ofs, const string& user, 
     return true;
 }
 
-void SoundwaveFilesystem::updateSong(const string& user, const string& modifier, const string& songName) {
+void SoundwaveFilesystem::updateSong(const string& user, const string& modifier, const string& songName, const std::string& path) {
     string songPath = user + "/" + songName;
-    bool success = SoundwaveDatabase::addContributer(songPath, modifier);
+    bool success = SoundwaveDatabase::addContributer(path, modifier);
     if (!success) {
         return;
     }
     size_t dotPos = songPath.rfind(".");
     string modPath = "../../data/" + songPath.substr(0, dotPos) + "/" + modifier + songPath.substr(dotPos);
-    songPath = "../../data/" + songPath;
-    string command = "rm " + songPath;
+    string rmPath = "../../data/" + path;
+    string command = "rm " + rmPath;
     system(command.c_str());
     dotPos = songPath.rfind(".");
-    songPath = songPath.substr(0,dotPos) + modifier + songPath.substr(dotPos);
-    rename(modPath.c_str(), songPath.c_str());
     string folder = songPath.substr(0, dotPos);
+    dotPos = rmPath.rfind(".");
+    songPath = rmPath.substr(0,dotPos) + modifier + rmPath.substr(dotPos);
+    rename(modPath.c_str(), songPath.c_str());
+   
     command = "rm  " + folder+"/*";
     system(command.c_str());
 }

@@ -36,7 +36,7 @@ public:
 
     bool createModification(std::ofstream& ofs, const std::string& user, const std::string& modifier, const std::string& songName, const std::string& songPath);
     
-    void updateSong(const std::string& user, const std::string& modifier, const std::string& songName);
+    void updateSong(const std::string& user, const std::string& modifier, const std::string& songName, const std::string& path);
 
     void createUserFolder(const std::string& user);
 

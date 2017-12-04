@@ -22,7 +22,7 @@ public:
 
     bool createModification(std::ofstream& ofs, const SoundwaveUser* modifier, const std::string& songName, const std::string& path);
 
-    void updateSong(const std::string& songName, const std::string& modifier);
+    void updateSong(const std::string& songName, const std::string& modifier, const std::string& path);
     
 private:
     std::string username;

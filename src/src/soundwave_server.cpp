@@ -155,8 +155,10 @@ void SoundwaveServer::updateSong(int client) {
     string username = readStringFromNetwork(buffer, client); // read size/creator from connection 
     string songName = readStringFromNetwork(buffer, client);
     string modified = readStringFromNetwork(buffer, client);
+    string path     = readStringFromNetwork(buffer, client);
+
     SoundwaveUser* user = findUser(username, true);
-    user->updateSong(songName, modified);
+    user->updateSong(songName, modified, path);
     
     uint8_t isValid = 1;
     write(client, &isValid, sizeof(uint8_t));

@@ -23,8 +23,8 @@ bool SoundwaveUser::createModification(ofstream& ofs, const SoundwaveUser* modif
     return result;
 }
 
-void SoundwaveUser::updateSong(const string& songName, const string& modifier) {
+void SoundwaveUser::updateSong(const string& songName, const string& modifier, const string& path) {
     userlock.lock();
-    sfs->updateSong(username, modifier, songName);
+    sfs->updateSong(username, modifier, songName, path);
     userlock.unlock();
 }

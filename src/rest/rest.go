@@ -474,6 +474,17 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
         }
 
         votes, _ := strconv.Atoi(string(output[:len(output)-1]))          //remove newline character from output
+
+        var path string
+        args = []string{"../../shell/get_path_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <=1 {
+            LOG[WARNING].Println("No song path found to song:", r.PostFormValue("title"), "for creator", r.PostFormValue("creator"))
+        } else {
+            path = string(output[:len(output)-1])
+        }
+
+
         if votes >= 5 {
             conn, err := net.Dial("tcp","127.0.0.1:5000")
             if err != nil {
@@ -514,6 +525,14 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
             }
             //send modifier username
             fmt.Fprintf(conn, r.PostFormValue("modifier"))
+
+            var pathSize = uint8(len(path))
+            err = binary.Write(conn, binary.LittleEndian, pathSize)
+            if err != nil {
+                LOG[ERROR].Println("binary.Write failed:", err)
+                return
+            }
+            fmt.Fprintf(conn, path)
             var isValid uint8
             binary.Read(conn, binary.LittleEndian, &isValid)
         }
@@ -543,15 +562,14 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
             modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
         }
 
-        var path string
         args = []string{"../../shell/get_path_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
         output, err = exec.Command("bash", args...).Output()
         if err != nil || len(output) <=1 {
-            LOG[WARNING].Println("No song path found to song:", r.PostFormValue("title"), "for creator", r.PostFormValue("creator"))
+            LOG[WARNING].Println("No song path found to song:")
         } else {
             path = string(output[:len(output)-1])
         }
-
+        fmt.Println(path)
 
         t, err := template.ParseFiles("../../web/song_page.html")
         err = t.Execute(w, struct{
