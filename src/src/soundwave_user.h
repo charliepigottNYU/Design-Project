@@ -22,6 +22,8 @@ public:
 
     bool createModification(std::ofstream& ofs, const SoundwaveUser* modifier, const std::string& songName);
 
+    void updateSong(const std::string& songName, const std::string& modifier);
+    
 private:
     std::string username;
     SoundwaveFilesystem* sfs;

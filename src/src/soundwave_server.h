@@ -34,6 +34,8 @@ public:
 
     void createModification(int client);
 
+    void updateSong(int client);
+    
     SoundwaveUser* findUser(const std::string& username, bool create = false);
 
     void loadSongFromNetwork(char* buffer, int client, std::ofstream& fileStream);

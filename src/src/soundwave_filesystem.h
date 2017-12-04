@@ -36,11 +36,12 @@ public:
 
     bool createModification(std::ofstream& ofs, const std::string& user, const std::string& modifier, const std::string& songPath);
     
+    void updateSong(const std::string& user, const std::string& modifier, const std::string& songPath);
+
     void createUserFolder(const std::string& user);
 
     //void deleteSong(std::string user, std::string songName);
     
-    //void voteSong(std::string user, std::string songName);
 };
 
 #endif

@@ -26,3 +26,17 @@ bool SoundwaveDatabase::createModification(const string& user, const string& son
     LOG(INFO) << "soundwave_database.cpp:CreateModification: " << "Status: " << status;
     return status == 0;
 }
+
+bool SoundwaveDatabase::addContributer(const string& songPath, const string& contributer) {
+    pid_t pid;
+    if ((pid = fork()) == 0) {
+        LOG(INFO) << "soundwave_database.cpp:addContributer " << "Execute shell script";
+        execl("../../shell/add_contributer.sh", "add_contributer.sh", "-u", contributer.c_str(),
+            "-p", songPath.c_str(), (char*)NULL);
+
+    }
+    int status;
+    wait(&status);
+    LOG(INFO) << "soundwave_database.cpp:addContributer: " << "Status: " << status;
+    return status == 0;
+}

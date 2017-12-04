@@ -60,3 +60,19 @@ bool SoundwaveFilesystem::createModification(ofstream& ofs, const string& user, 
     }
     return true;
 }
+
+void SoundwaveFilesystem::updateSong(const string& user, const string& modifier, const string& songName) {
+    string songPath = user + "/" + songName;
+    bool success = SoundwaveDatabase::addContributer(songPath, modifier);
+    if (!success) {
+        return;
+    }
+    size_t dotPos = songPath.rfind(".");
+    string modPath = "../../data/" + songPath.substr(0, dotPos) + "/" + modifier + songPath.substr(dotPos);
+    songPath = "../../data/" + songPath;
+    rename(modPath.c_str(), songPath.c_str());
+    dotPos = songPath.rfind(".");
+    string folder = songPath.substr(0, dotPos);
+    string command = "rm  " + folder+"/*";
+    system(command.c_str());
+}

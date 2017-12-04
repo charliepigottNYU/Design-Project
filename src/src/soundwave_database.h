@@ -14,6 +14,8 @@ public:
     static bool createSong(const std::string& user, const std::string& songName, const std::string& songPath);
     
     static bool createModification(const std::string& user, const std::string& songPath, const std::string& modPath);
+    
+    static bool addContributer(const std::string& song_path, const std::string& contributer);
     //static bool deleteSong(std::string user, std::string songPath);
 
 };

@@ -52,6 +52,8 @@ void SoundwaveServer::run() {
                 break;}
             case Command::ReplaceSong:{
                 LOG(INFO) << "soundwave_server.cpp:run: " << "Command::ReplaceSong";
+                thread runClient(&SoundwaveServer::updateSong, this, client);
+                runClient.detach();
                 break;}
             case Command::DeleteSong:{
                 LOG(INFO) << "soundwave_server.cpp:run: " << "Command::DeleteSong";
@@ -140,6 +142,20 @@ void SoundwaveServer::createModification(int client) {
 
     delete[] buffer;
     fileStream.close();
+    close(client);
+}
+
+void SoundwaveServer::updateSong(int client) {
+    char* buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    
+    string username = readStringFromNetwork(buffer, client); // read size/creator from connection 
+    string songName = readStringFromNetwork(buffer, client);
+    string modified = readStringFromNetwork(buffer, client);
+    SoundwaveUser* user = findUser(username, true);
+    user->updateSong(songName, modified);
+
+    delete[] buffer;
     close(client);
 }
 
