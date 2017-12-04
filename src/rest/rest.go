@@ -156,10 +156,8 @@ func upload(w http.ResponseWriter, r *http.Request) {
         }
         fmt.Fprintf(conn, header.Filename)  // send song name
 
-        fmt.Println("beforeread")
         var isValid uint8
         binary.Read(conn, binary.LittleEndian, &isValid)
-        fmt.Println("afterread")
         if isValid != 1 {
             LOG[ERROR].Println("Invalid Username:", cookie.Value)
             return

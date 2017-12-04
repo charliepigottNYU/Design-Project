@@ -50,8 +50,8 @@ void SoundwaveServer::run() {
                 thread runClient(&SoundwaveServer::createModification, this, client);
                 runClient.detach();
                 break;}
-            case Command::VoteSong:{
-                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::VoteSong";
+            case Command::ReplaceSong:{
+                LOG(INFO) << "soundwave_server.cpp:run: " << "Command::ReplaceSong";
                 break;}
             case Command::DeleteSong:{
                 LOG(INFO) << "soundwave_server.cpp:run: " << "Command::DeleteSong";
