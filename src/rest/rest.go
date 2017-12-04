@@ -164,6 +164,8 @@ func upload(w http.ResponseWriter, r *http.Request) {
         }
 
         sendFile(file, header, conn)
+
+        http.Redirect(w, r, "", http.StatusSeeOther)
     }
 }
 
@@ -421,6 +423,22 @@ func addModification(w http.ResponseWriter, r *http.Request) {
         }
         //send title
         fmt.Fprintf(conn, r.PostFormValue("title"))
+
+        var path string
+        args := []string{"../../shell/get_path_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
+        output, err := exec.Command("bash", args...).Output()
+        if err != nil || len(output) <=1 {
+            LOG[WARNING].Println("No song path found to song:", r.PostFormValue("title"), "for creator", r.PostFormValue("creator"))
+        } else {
+            path = string(output[:len(output)-1])
+        }
+        pathsize := uint8(len(path))
+        err = binary.Write(conn, binary.LittleEndian, pathsize)
+        if isValid != 1 {
+            LOG[ERROR].Println("Invalid path", err)
+        }
+        fmt.Fprintf(conn, path)
+
         binary.Read(conn, binary.LittleEndian, &isValid)
         if isValid != 1 {
             LOG[ERROR].Println("Invalid modifier name:", cookie.Value)
