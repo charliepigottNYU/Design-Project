@@ -29,10 +29,12 @@ bool SoundwaveDatabase::createModification(const string& user, const string& son
 
 bool SoundwaveDatabase::addContributer(const string& songPath, const string& contributer) {
     pid_t pid;
+    size_t dotPos = songPath.rfind(".");
+    string newPath = songPath.substr(0,dotPos) + contributer + songPath.substr(dotPos);
     if ((pid = fork()) == 0) {
         LOG(INFO) << "soundwave_database.cpp:addContributer " << "Execute shell script";
         execl("../../shell/add_contributer.sh", "add_contributer.sh", "-u", contributer.c_str(),
-            "-p", songPath.c_str(), (char*)NULL);
+            "-p", songPath.c_str(),"-n", newPath.c_str(), (char*)NULL);
 
     }
     int status;

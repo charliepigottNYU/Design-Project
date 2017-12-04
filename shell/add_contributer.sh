@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PGPASSWORD=CS4523
-usage="Usage: -u <username> -p <path>"
+usage="Usage: -u <username> -p <path> -n <new path>"
 
 while getopts ":u:p:" opt; do
     case $opt in
@@ -9,12 +9,14 @@ while getopts ":u:p:" opt; do
         ;;
         p) song_path="$OPTARG";
         ;;
+        n) new_path="$OPTARG";
+        ;;
         \?) echo $usage;  exit 1;
         ;;
     esac
 done
 
-if [ -z "$username" ] || [ -z "$song_path" ];
+if [ -z "$username" ] || [ -z "$song_path" ] || [ -z "$new_path" ];
 then
     echo $usage;
     exit 1
@@ -22,7 +24,7 @@ fi
 
 mkdir -p ../../tmp
 
-cat ../../sql/templates/insert_contributer.template | sed -e "s:<contributer>:$username:g" -e "s:<song>:$song_path:g" > ../../tmp/insert_contributer.sql
+cat ../../sql/templates/insert_contributer.template | sed -e "s:<contributer>:$username:g" -e "s:<song>:$song_path:g" -e "s:<new>:$new_path:g" > ../../tmp/insert_contributer.sql
 
 psql -U postgres -f ../../tmp/insert_contributer.sql -d postgres -v "ON_ERROR_STOP=1"
 
