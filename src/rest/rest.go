@@ -490,6 +490,8 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
             }
             //send modifier username
             fmt.Fprintf(conn, r.PostFormValue("modifier"))
+            var isValid uint8
+            binary.Read(conn, binary.LittleEndian, &isValid)
         }
 
         var contributers []string

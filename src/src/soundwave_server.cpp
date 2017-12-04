@@ -155,7 +155,7 @@ void SoundwaveServer::updateSong(int client) {
     SoundwaveUser* user = findUser(username, true);
     user->updateSong(songName, modified);
     
-    isValid = 1;
+    uint8_t isValid = 1;
     write(client, &isValid, sizeof(uint8_t));
 
     delete[] buffer;
