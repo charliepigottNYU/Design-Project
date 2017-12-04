@@ -491,7 +491,50 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
             //send modifier username
             fmt.Fprintf(conn, r.PostFormValue("modifier"))
         }
-        http.Redirect(w, r, "/home", http.StatusSeeOther)
+
+        var contributers []string
+        args = []string{"../../shell/get_contributer_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[WARNING].Println("No contributers to song:", r.PostFormValue("title"), "for creator", r.PostFormValue("creator"))
+        } else {
+            contributers = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modifications []string
+        args = []string{"../../shell/get_modification_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <= 1 {
+            LOG[INFO].Println("No modifications for song:", r.PostFormValue("title"), "created by", r.PostFormValue("creator"))
+        } else {
+            modifications = strings.Split(string(output[:len(output)-1]), " ")
+        }
+
+        var modInfo []struct{Title, Path, Votes string}
+        for _, elem := range modifications {
+            info := strings.Split(elem, ",")
+            fmt.Println(elem)
+            modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
+        }
+
+        t, err := template.ParseFiles("../../web/song_page.html")
+        err = t.Execute(w, struct{
+            Title         string
+            Creator       string
+            Path          string
+            Contributers  []string
+            Modifications []struct{Title, Path, Votes string}
+        }{
+            Title:         r.PostFormValue("title"),
+            Creator:       r.PostFormValue("creator"),
+            Path:          r.PostFormValue("original_path"),
+            Contributers:  contributers,
+            Modifications: modInfo,
+        })
+        if err != nil {
+            LOG[ERROR].Println("Unable to execute template", err)
+            return
+        }
     }
 }
 
