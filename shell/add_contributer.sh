@@ -3,7 +3,7 @@
 export PGPASSWORD=CS4523
 usage="Usage: -u <username> -p <path> -n <new path>"
 
-while getopts ":u:p:" opt; do
+while getopts ":u:p:n:" opt; do
     case $opt in
         u) username="$OPTARG"; 
         ;;

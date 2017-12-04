@@ -34,9 +34,9 @@ public:
     */
     bool createSong(std::ofstream& ofs, const std::string& user, const std::string& songName);
 
-    bool createModification(std::ofstream& ofs, const std::string& user, const std::string& modifier, const std::string& songPath);
+    bool createModification(std::ofstream& ofs, const std::string& user, const std::string& modifier, const std::string& songName, const std::string& songPath);
     
-    void updateSong(const std::string& user, const std::string& modifier, const std::string& songPath);
+    void updateSong(const std::string& user, const std::string& modifier, const std::string& songName);
 
     void createUserFolder(const std::string& user);
 

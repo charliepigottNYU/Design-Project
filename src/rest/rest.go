@@ -543,6 +543,16 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
             modInfo = append(modInfo, struct{Title, Path, Votes string}{info[0], info[1], info[2]})
         }
 
+        var path string
+        args = []string{"../../shell/get_path_by_song.sh", "-s", r.PostFormValue("title"), "-u", r.PostFormValue("creator")}
+        output, err = exec.Command("bash", args...).Output()
+        if err != nil || len(output) <=1 {
+            LOG[WARNING].Println("No song path found to song:", r.PostFormValue("title"), "for creator", r.PostFormValue("creator"))
+        } else {
+            path = string(output[:len(output)-1])
+        }
+
+
         t, err := template.ParseFiles("../../web/song_page.html")
         err = t.Execute(w, struct{
             Title         string
@@ -553,7 +563,7 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
         }{
             Title:         r.PostFormValue("title"),
             Creator:       r.PostFormValue("creator"),
-            Path:          r.PostFormValue("original_path"),
+            Path:          path,
             Contributers:  contributers,
             Modifications: modInfo,
         })

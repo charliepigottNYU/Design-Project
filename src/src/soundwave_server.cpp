@@ -124,13 +124,15 @@ void SoundwaveServer::createModification(int client) {
     write(client, &isValid, sizeof(uint8_t));  // write successful response
 
     string songName = readStringFromNetwork(buffer, client);  // read size/songname from connection
+    
+    string path = readStringFromNetwork(buffer, client);
 
     ofstream fileStream;
     for (size_t i = 0; i < songName.size(); ++i) {
         if (songName[i] == ' ')
             songName[i] = '-';
     }
-    if (!user->createModification(fileStream, modifier, songName)) {
+    if (!user->createModification(fileStream, modifier, songName, path)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));
         close(client);

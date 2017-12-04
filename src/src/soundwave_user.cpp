@@ -16,9 +16,9 @@ bool SoundwaveUser::createSong(ofstream& ofs, const string& songName) {
     return result;
 }
 
-bool SoundwaveUser::createModification(ofstream& ofs, const SoundwaveUser* modifier, const string& songName) {
+bool SoundwaveUser::createModification(ofstream& ofs, const SoundwaveUser* modifier, const string& songName, const string& path) {
     userlock.lock();
-    bool result = sfs->createModification(ofs, username, modifier->username, songName);
+    bool result = sfs->createModification(ofs, username, modifier->username, songName, path);
     userlock.unlock();
     return result;
 }
