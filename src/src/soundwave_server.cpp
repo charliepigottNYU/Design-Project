@@ -132,6 +132,7 @@ void SoundwaveServer::createModification(int client) {
         if (songName[i] == ' ')
             songName[i] = '-';
     }
+
     if (!user->createModification(fileStream, modifier, songName, path)) {
         isValid = 0;
         write(client, &isValid, sizeof(uint8_t));
