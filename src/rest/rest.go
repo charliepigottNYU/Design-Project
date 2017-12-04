@@ -165,7 +165,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
         sendFile(file, header, conn)
 
-        http.Redirect(w, r, "", http.StatusSeeOther)
+        http.Redirect(w, r, "/get_songs", http.StatusSeeOther)
     }
 }
 
@@ -184,12 +184,14 @@ func signupSubmit(w http.ResponseWriter, r *http.Request) {
             err := exec.Command("bash", args...).Run()
             if err != nil {
                 LOG[ERROR].Println("error sending database info", err)
+                http.Redirect(w, r, "/wecome", http.StatusSeeOther)
                 return
             }
             LOG[INFO].Println(r.PostFormValue("username")," signup")
             http.SetCookie(w, genCookie(r.PostFormValue("username")))
             http.Redirect(w, r, "/home", http.StatusSeeOther)
         }
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
     }
 }
 
@@ -208,6 +210,7 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
         output, err := exec.Command("bash", args...).Output()
         if err != nil || len(output) == 0 {
             LOG[INFO].Println("Username does not exist", r.PostFormValue("username"))
+            http.Redirect(w, r, "/welcome", http.StatusSeeOther)
             return
         }
 
@@ -215,6 +218,7 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
         if password != r.PostFormValue("password") {
             LOG[INFO].Println("Incorrect Password",
                 r.PostFormValue("username"), r.PostFormValue("password"))
+            http.Redirect(w, r, "/welcome", http.StatusSeeOther)
             return
         }
         http.SetCookie(w, genCookie(r.PostFormValue("username")))
@@ -446,6 +450,8 @@ func addModification(w http.ResponseWriter, r *http.Request) {
         }
 
         sendFile(file, header, conn)
+
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
     }
 }
 
