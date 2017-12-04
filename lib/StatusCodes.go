@@ -5,7 +5,7 @@ const (
     _ uint8 = iota
     CommandCreateSong
     CommandModifySong
-    CommandVoteSong
+    CommandReplaceSong
     CommandDeleteSong
 )
 

@@ -78,17 +78,21 @@
         <audio controls>
             <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/mpeg">
             <source src=http://127.0.0.1:8080/song/{{$modification.Path}} type="audio/wav">
-            <form action="http://127.0.0.1:8080/vote_page" method="post">
-                <input type="hidden" name="vote", value=-1>
-                <input type="hidden", name="modification_path", value={{$modification.Path}}>
+        </audio>
+        {{$modification.Votes}}<br>
+            <form action="http://127.0.0.1:8080/vote_page" method="post" style="float: left">
+                <input type="hidden" name="vote" value=-1>
+                <input type="hidden" name="modification_path" value={{$modification.Path}}>
                 <input type="submit" value="<-">
             </form>
             <form action="http://127.0.0.1:8080/vote_page" method="post">
-                <input type="hidden" name="vote", value=1>
+                <input type="hidden" name="vote" value=1>
+                <input type="hidden" name="modification_path" value={{$modification.Path}}>
+                <input type="hidden" name="creator" value={{$.Creator}}>
+                <input type="hidden" name="title" value={{$.Title}}>
+                <input type="hidden" name="modifier" value={{$modification.Title}}>
                 <input type="submit" value="->">
             </form>
-        </audio>
-        {{$modification.Votes}}
         <br>
         {{end}}
         </main>

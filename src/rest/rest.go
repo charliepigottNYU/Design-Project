@@ -395,7 +395,7 @@ func addModification(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(conn, r.PostFormValue("creator"))
         binary.Read(conn, binary.LittleEndian, &isValid)
         if isValid != 1 {
-            LOG[ERROR].Println("Invalid creator name:", )
+            LOG[ERROR].Println("Invalid creator name:", r.PostFormValue("creator"))
             return
         }
 
@@ -434,6 +434,12 @@ func addModification(w http.ResponseWriter, r *http.Request) {
 }
 
 func recordVote(w http.ResponseWriter, r *http.Request) {
+    clearCache(w)
+    _, ok := getCookie(r)
+    if !ok {
+        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+        return
+    }
     if r.Method == http.MethodPost {
         voteModifier := r.PostFormValue("vote")
         modificationPath := r.PostFormValue("modification_path")
@@ -447,7 +453,44 @@ func recordVote(w http.ResponseWriter, r *http.Request) {
 
         votes, _ := strconv.Atoi(string(output[:len(output)-1]))          //remove newline character from output
         if votes >= 5 {
-            // replace old song with new
+            conn, err := net.Dial("tcp","127.0.0.1:5000")
+            if err != nil {
+                LOG[ERROR].Println("error connecting to port 5000", err)
+                return
+            }
+            defer conn.Close()
+
+            err = binary.Write(conn, binary.LittleEndian, CommandReplaceSong)
+
+            //send the size of the creator over the network
+            userSize := uint8(len(r.PostFormValue("creator")))
+            err = binary.Write(conn, binary.LittleEndian, userSize)
+            if err != nil {
+                LOG[ERROR].Println("binary.Write failed:", err)
+                return
+            }
+            //send creator username
+            fmt.Fprintf(conn, r.PostFormValue("creator"))
+
+            //send the size of the original song name over the network
+            songSize := uint8(len(r.PostFormValue("title")))
+            err = binary.Write(conn, binary.LittleEndian, songSize)
+            if err != nil {
+                LOG[ERROR].Println("binary.Write failed:", err)
+                return
+            }
+            //send original song name
+            fmt.Fprintf(conn, r.PostFormValue("title"))
+
+            //send the size of the modifier over the network
+            userSize = uint8(len(r.PostFormValue("modifier")))
+            err = binary.Write(conn, binary.LittleEndian, userSize)
+            if err != nil {
+                LOG[ERROR].Println("binary.Write failed:", err)
+                return
+            }
+            //send modifier username
+            fmt.Fprintf(conn, r.PostFormValue("modifier"))
         }
         http.Redirect(w, r, "/home", http.StatusSeeOther)
     }
