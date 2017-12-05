@@ -30,7 +30,6 @@ func main() {
     http.HandleFunc("/login", login)
     http.HandleFunc("/logout", logout)
     http.HandleFunc("/file_upload",upload)
-    http.HandleFunc("/play", play)
     http.HandleFunc("/signup-submit", signupSubmit)
     http.HandleFunc("/login-submit", loginSubmit)
     http.HandleFunc("/get_songs", getSongs)
@@ -97,18 +96,6 @@ func logout(w http.ResponseWriter, r *http.Request) {
     cookie.Expires = time.Now().Add(-1 * time.Hour)
     http.SetCookie(w, cookie)
     http.Redirect(w, r, "/welcome", http.StatusSeeOther)
-}
-
-func play(w http.ResponseWriter, r *http.Request) {
-    clearCache(w)
-    _, ok := getCookie(r)
-    if !ok {
-        http.Redirect(w, r, "/welcome", http.StatusSeeOther)
-        return
-    }
-    if r.Method == http.MethodGet {
-        http.ServeFile(w, r, "../src/sound.mp3")
-    }
 }
 
 //gets song information from user and sends it to filesystem
