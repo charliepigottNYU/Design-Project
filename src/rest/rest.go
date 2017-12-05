@@ -37,6 +37,7 @@ func main() {
     http.HandleFunc("/song-page", populateSongPage)
     http.HandleFunc("/modification_upload", addModification)
     http.HandleFunc("/vote_page", recordVote)
+    http.HandleFunc("/delete", deleteSong)
 
     http.Handle("/song/", NoCache(http.StripPrefix("/song/", http.FileServer(http.Dir("../../data")))))
 
@@ -153,6 +154,21 @@ func upload(w http.ResponseWriter, r *http.Request) {
         sendFile(file, header, conn)
 
         http.Redirect(w, r, "/get_songs", http.StatusSeeOther)
+    }
+}
+
+func deleteSong(w http.ResponseWriter, r* http.Request) {
+    if r.Method == http.MethodPost {
+        r.ParseForm()
+        cookie, _ := getCookie(r)
+        args := []string{"../../shell/delete_song.sh", "-u", cookie.Value, "-p", r.PostFormValue("path")}
+        err := exec.Command("bash", args...).Run()
+        if err != nil {
+            LOG[ERROR].Println("error sending db info", err)
+            http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+            return
+        }
+        http.Redirect(w, r, "/home", http.StatusSeeOther)
     }
 }
 

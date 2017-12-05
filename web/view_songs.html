@@ -60,6 +60,10 @@
                 <source src=http://127.0.0.1:8080/song/{{$song.Path}} type="audio/wav">
             </audio>
             <br>
+            <form action="http://127.0.0.1:8080/delete" method="post">
+                <input type="hidden" name="path" value={{$song.Path}}>
+                <input type="submit" value="delete">
+            </form>
             {{end}}
         </main>
     </div>
